@@ -24,7 +24,7 @@ class World:
         self.area = Area(areadata, self.client, self.pid, self.base_display)
         self.area_name = areadata[0]
         self.loaded_areas[self.area_name] = self.area   # currently useless bc server handles area loading
-        self.new_area = True
+        self.new_area = False
         # self.client.update_server_area(self.area_name)
 
     def check_exits(self):
@@ -41,8 +41,10 @@ class World:
             player_dict = self.client.instance_update(self.area.character)
             for pid, playerdata in player_dict.items():
                 if pid not in self.area.other_players.keys():
-                    self.area.other_players[pid] = OtherPlayer(playerdata[0], [self.area.collide_grp, self.area.visible_grp],
-                                                        self.area.atkable_grp, self.area.collide_grp, self.area.tile_grp)
+                    self.area.other_players[pid] = OtherPlayer(playerdata[0],
+                                                               [self.area.collide_grp, self.area.visible_grp],
+                                                               self.area.atkable_grp, self.area.collide_grp,
+                                                               self.area.tile_grp)
                 elif pid != self.pid:
                     self.area.other_players[pid].position = playerdata[0]
                     if self.area.other_players[pid].state != playerdata[1]:
@@ -60,7 +62,6 @@ class World:
                 self.new_area = False
 
     def run(self, dt):
-        tick = pygame.time.get_ticks()
         self.area.update(dt)
         self.check_exits()
 
@@ -69,6 +70,7 @@ class World:
         #     self.load_area(next_area, )
 
         # can make a custom pygame userevent which gets sent every 5 minutes? to avoid checking every tick
+        # tick = pygame.time.get_ticks()
         # for area, obj in self.loaded_areas.items():
         #     if (tick - obj.updated) > 50000:   # however many ticks of idle area
         #         self.loaded_areas.pop(area)

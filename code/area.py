@@ -38,7 +38,7 @@ class Area:
 
     def update(self, dt):
         self.updated = pygame.time.get_ticks()
-        # self.sync_update()
         self.visible_grp.custom_draw()
         self.visible_grp.update(dt)
+        # self.sync_update()
         # print("Players in area:", self.other_players)

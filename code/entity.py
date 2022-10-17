@@ -36,7 +36,7 @@ class Entity(pygame.sprite.Sprite):
 
         # physics
         self.inputV = pygame.Vector2()
-        self.listV = [pygame.Vector2(1, 2)]
+        self.listV = [pygame.Vector2()]
 
         # combat
         self.cooldowns = {}
