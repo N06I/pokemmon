@@ -8,6 +8,7 @@ from file_management import load_gamestate, make_game
 
 reso = (640, 360)
 scaled_reso = (1280, 720)
+print("tetingu")
 
 # data stored in server, received once when game launches
 area_name = "area1"
