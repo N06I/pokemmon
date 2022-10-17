@@ -1,11 +1,17 @@
 import threading
+import pygame
 
 
-class A:
-    def __init__(self):
+gr = pygame.sprite.Group()
+
+
+class A(pygame.sprite.Sprite):
+    def __init__(self, groups):
+        self.image = pygame.Surface((0, 0))
+        super().__init__(groups)
         self.a = 1
-        thread = threading.Thread(target=self.ba)
-        thread.start()
+        # thread = threading.Thread(target=self.ba)
+        # thread.start()
         del self
         print("LMAO")
 
@@ -15,4 +21,5 @@ class A:
             print(self.a)
 
 
-ja = A()
+ja = A([gr])
+print(ja.image)

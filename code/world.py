@@ -1,8 +1,9 @@
 import pygame
 import threading
 
-from area import Area, OtherPlayer
+from area import Area
 from raw import areaExits
+from character import OtherPlayer
 
 
 class World:

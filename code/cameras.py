@@ -26,15 +26,3 @@ class YSortCenterCam(YSortCam):
         for sprite in sorted(self.sprites(), key=lambda x: x.rect.bottom):
             offset = (sprite.rect.left + displacement[0], sprite.rect.top + displacement[1])
             self.screen.blit(sprite.image, offset)
-
-    # def draw(self, follow):
-    #     pos = (self.screen_center[0] - self.character.rect.centerx, self.screen_center[1] - self.character.rect.centery)
-    #     self.base_display.blit(self.floor, pos if self.area_offset == (0, 0) else self.area_offset)
-    #     if follow:
-    #         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.hitbox.centery):
-    #             self.follow_blyat(sprite)
-    #     else:
-    #         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.hitbox.centery):
-    #             self.blyat(sprite)
-    #     self.base_display.blit(self.roof, pos if self.area_offset == (0, 0) else self.area_offset)
-
