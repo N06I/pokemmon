@@ -42,6 +42,7 @@ class Server:
 
         connected = True
         while connected:
+            print(self.loaded_players)
             # each message will come in the form of 2 messages,
             # the first one being a HEADER containing the length of the 2d
             msg_length = conn.recv(self.HEADER).decode(self.FORMAT)  # header
@@ -78,7 +79,7 @@ class Server:
                         else:   # if it's a string and not the DC string, it's an area change
                             old_area = self.current_areas[pid]
                             # pops the player data from his old area and adds it to the new
-                            if msg not in self.loaded_players:
+                            if msg not in self.loaded_players:  # msg is the new area
                                 self.loaded_players[msg] = {}
                             self.loaded_players[msg][pid] = self.loaded_players[old_area].pop(pid)
                             self.current_areas[pid] = msg

@@ -25,7 +25,7 @@ class World:
         self.area = Area(areadata, self.client, self.pid, self.base_display)
         self.area_name = areadata[0]
         self.loaded_areas[self.area_name] = self.area   # currently useless bc server handles area loading
-        self.new_area = False
+        self.new_area = True
         # self.client.update_server_area(self.area_name)
 
     def check_exits(self):
@@ -33,7 +33,7 @@ class World:
         for exitpoint in self.area.exits:
             if self.area.character.hitbox.collidepoint(exitpoint):
                 exitdata = areaExits[self.area_name][exitpoint]
-            print("exit: ", exitpoint, " char:", self.area.character.rect.midbottom)
+            # print("exit: ", exitpoint, " char:", self.area.character.rect.midbottom)
         if exitdata:
             self.load_area(exitdata)
 
