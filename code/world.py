@@ -40,27 +40,7 @@ class World:
     def async_update(self):
         while True:
             self.area.player_dict_simple = self.client.instance_update(self.area.character)
-            print(self.area.player_dict_simple)
-            for pid, playerdata in self.area.player_dict_simple.items():
-                # if pid not in self.area.other_players.keys():
-                #
-                #     self.area.other_players[pid] = OtherPlayer(playerdata[0],
-                #                                                [self.area.collide_grp, self.visible_grp],
-                #                                                self.area.atkable_grp, self.area.collide_grp,
-                #                                                self.area.tile_grp)
-                #     self.area.other_players[pid].add(self.area.visible_grp)
-                if pid in self.area.player_dict_simple.keys() and pid != self.pid and pid in self.area.other_players:
-                    self.area.other_players[pid].position = playerdata[0]
-                    if self.area.other_players[pid].state != playerdata[1]:
-                        self.area.other_players[pid].state = playerdata[1]
-                        self.area.other_players[pid].anim_idx = 100
-            gone = []
-            for pid in self.area.other_players.keys():
-                if pid not in self.area.player_dict_simple:
-                    gone.append(pid)
-            for k in gone:
-                self.area.other_players[k].kill()
-                del self.area.other_players[k]
+            self.area.must_update = True
             if self.new_area:
                 self.client.update_server_area(self.area_name)
                 self.new_area = False
