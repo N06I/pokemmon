@@ -9,7 +9,7 @@ class Server:
         self.HEADER = 16
         self.PORT = 5050
         self.SERVER = socket.gethostbyname(socket.gethostname())  # gets host's IP
-        self.SERVER = "192.168.0.18"
+        self.SERVER = "10.7.114.96"
         print(f"Hosting at [{self.SERVER}]")
         self.ADDR = (self.SERVER, self.PORT)
         self.DISCONNECT_MESSAGE = "!DISCONNECT"

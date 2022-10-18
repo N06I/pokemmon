@@ -1,7 +1,7 @@
 import pygame
 
 from cameras import YSortCam, YSortCenterCam
-from character import Character
+from character import Character, OtherPlayer
 from raw import areaExits
 
 
@@ -34,10 +34,20 @@ class Area:
         self.visible_grp = YSortCam(self.character, self.background, self.base_display) if self.area_name in self.staticCamAreas else YSortCenterCam(self.character, self.background, self.base_display)
         self.character.add(self.visible_grp)
         self.other_players = {self.pid: self.character}
+        self.player_dict_simple = {}
+
+    def check_others(self):
+        for pid, playerdata in self.player_dict_simple.items():
+            if pid not in self.other_players:
+                self.other_players[pid] = OtherPlayer(playerdata[0],
+                                                           [self.collide_grp, self.visible_grp],
+                                                           self.atkable_grp, self.collide_grp,
+                                                           self.tile_grp)
 
     def update(self, dt):
         self.updated = pygame.time.get_ticks()
         self.visible_grp.custom_draw()
         self.visible_grp.update(dt)
+        self.check_others()
         # self.sync_update()
         # print("Players in area:", self.other_players)
