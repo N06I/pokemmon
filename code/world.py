@@ -17,7 +17,7 @@ class World:
         self.new_area = False
         self.loaded_areas = {}  # {"area1": areaObject} | made a dict to access area names, could be an object list
         self.load_area(areadata)
-        thread = threading.Thread(target=self.sync_update)
+        thread = threading.Thread(target=self.async_update)
         thread.start()
 
     def load_area(self, areadata):
@@ -36,15 +36,16 @@ class World:
         if exitdata:
             self.load_area(exitdata)
 
-    def sync_update(self):
+    def async_update(self):
         while True:
             player_dict = self.client.instance_update(self.area.character)
             for pid, playerdata in player_dict.items():
                 if pid not in self.area.other_players.keys():
                     self.area.other_players[pid] = OtherPlayer(playerdata[0],
-                                                               [self.area.collide_grp, self.area.visible_grp],
+                                                               [self.area.collide_grp],
                                                                self.area.atkable_grp, self.area.collide_grp,
                                                                self.area.tile_grp)
+                    self.area.other_players[pid].add(self.area.visible_grp)
                 elif pid != self.pid:
                     self.area.other_players[pid].position = playerdata[0]
                     if self.area.other_players[pid].state != playerdata[1]:
