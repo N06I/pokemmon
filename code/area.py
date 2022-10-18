@@ -1,8 +1,7 @@
 import pygame
-import threading
 
 from cameras import YSortCam, YSortCenterCam
-from character import Character, OtherPlayer
+from character import Character
 from raw import areaExits
 
 
