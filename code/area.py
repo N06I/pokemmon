@@ -46,7 +46,7 @@ class Area:
                                                                self.atkable_grp, self.collide_grp,
                                                                self.tile_grp)
             for pid, playerdata in self.player_dict_simple.items():
-                if pid in self.player_dict_simple.keys() and pid != self.pid and pid in self.area.other_players:
+                if pid in self.player_dict_simple.keys() and pid != self.pid and pid in self.other_players:
                     self.other_players[pid].position = playerdata[0]
                     if self.other_players[pid].state != playerdata[1]:
                         self.other_players[pid].state = playerdata[1]
