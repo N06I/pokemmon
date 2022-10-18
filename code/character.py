@@ -5,7 +5,6 @@ from entity import Entity
 class Character(Entity):
     def __init__(self, position, groups, atkables, collidables, tiles):
         super().__init__(position, groups, atkables, collidables, tiles)
-        print(f"((INIT METHOD)) {self.name} created at => {position}")
         self.image = pygame.Surface((16, 16), pygame.SRCALPHA)
         self.rect = self.image.get_rect(midbottom=position)
 

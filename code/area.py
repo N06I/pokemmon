@@ -41,6 +41,7 @@ class Area:
         if self.must_update:
             for pid, playerdata in self.player_dict_simple.items():
                 if pid not in self.other_players:
+                    print(f"Player {pid} created at {playerdata[0]}.")
                     self.other_players[pid] = OtherPlayer(playerdata[0],
                                                                [self.collide_grp, self.visible_grp],
                                                                self.atkable_grp, self.collide_grp,
@@ -55,6 +56,7 @@ class Area:
             for pid in self.other_players.keys():
                 if pid not in self.player_dict_simple:
                     gone.append(pid)
+                    print(f"Player {pid} left the area.")
             for k in gone:
                 self.other_players[k].kill()
                 del self.other_players[k]
