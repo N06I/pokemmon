@@ -12,7 +12,7 @@ class Client:
         self.SERVER = "192.168.0.18"
         self.ADDR = (self.SERVER, self.PORT)
 
-        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client = socket.socket(socket.AF_INET, socket.TCP_NODELAY)
         self.client.connect(self.ADDR)
 
         self.connection_id = pid

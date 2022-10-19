@@ -15,7 +15,7 @@ class Server:
         self.ADDR = (self.SERVER, self.PORT)
         self.DISCONNECT_MESSAGE = "!DISCONNECT"
 
-        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server = socket.socket(socket.AF_INET, socket.TCP_NODELAY)
         self.server.bind(self.ADDR)
 
         self.player_cnt = -1
