@@ -59,6 +59,7 @@ class Server:
                     area = self.current_areas[pid]      # gets player's data from pid in method execution memory
                     self.loaded_players[area][pid] = msg    # stores the received player's current data internally
                     self.send(conn, self.loaded_players[area])  # replies with the current area's players' data
+                    print("Relevant area data sent: ", time.perf_counter())
 
                 elif type(msg) is str:  # sending ints as string so need to check
                     try:

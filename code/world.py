@@ -1,3 +1,5 @@
+import time
+
 import pygame
 import threading
 
@@ -39,6 +41,7 @@ class World:
 
     def async_update(self):
         while True:
+            time.sleep(0.005)   # need to sleep to not overwhelm OS with crazy amounts of unnecessary update requests
             self.area.player_dict_simple = self.client.instance_update(self.area.character)
             self.area.must_update = True
             if self.new_area:
