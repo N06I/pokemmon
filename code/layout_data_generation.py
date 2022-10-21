@@ -4,7 +4,7 @@ import time
 
 surf = pygame.image.load("../poke_assets/fireRed_leafGreen/backgrounds/celadon_city.png")
 og = pygame.surfarray.array2d(surf)
-print(f"Image: \n{og}\n")
+
 search = pygame.surfarray.array2d(pygame.image.load("../poke_assets/search/house1.png"))
 matches = []
 stime = time.time()
