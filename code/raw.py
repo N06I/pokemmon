@@ -22,3 +22,5 @@ areaExits = {
         (40, 260): ("celadon_city", (184, 296))
     }
 }
+
+spriteHitboxes = {"fence1.png": 1}

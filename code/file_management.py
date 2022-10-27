@@ -29,3 +29,9 @@ def get_sprite_assets(name):
             anim_size = animData[name][key.split("_")[0]][1]
             assets[key] = [pygame.image.load(f"{path}/{file}").convert_alpha(), anim_len, anim_size]
     return assets
+
+
+def get_layout(area):
+    with open("layouts.json") as f:
+        layouts = json.load(f)
+        return layouts[f"{area}.png"]

@@ -3,6 +3,8 @@ import pygame
 from cameras import YSortCam, YSortCenterCam
 from character import Character, OtherPlayer
 from raw import areaExits
+from file_management import get_layout
+from prop import Prop
 
 
 class Area:
@@ -30,12 +32,15 @@ class Area:
         self.collide_grp = pygame.sprite.Group()
         self.tile_grp = pygame.sprite.Group()
         self.char_grp = pygame.sprite.GroupSingle()
-        self.character = Character(areadata[1], [self.char_grp, self.collide_grp],
+        self.character = Character(areadata[1], [self.char_grp],
                                    self.atkable_grp, self.collide_grp, self.tile_grp)
         self.visible_grp = YSortCam(self.character, self.background, self.base_display) if self.area_name in self.staticCamAreas else YSortCenterCam(self.character, self.background, self.base_display)
         self.character.add(self.visible_grp)
         self.other_players = {self.pid: self.character}
         self.player_dict_simple = {}
+
+        # layout sprites
+        self.layout_setup(get_layout(self.area_name))
 
     def check_update(self):
         if self.must_update:
@@ -43,7 +48,7 @@ class Area:
                 if pid not in self.other_players:
                     print(f"Player {pid} created at {playerdata[0]}.")
                     self.other_players[pid] = OtherPlayer(playerdata[0],
-                                                               [self.collide_grp, self.visible_grp],
+                                                               [self.visible_grp],
                                                                self.atkable_grp, self.collide_grp,
                                                                self.tile_grp)
             for pid, playerdata in self.player_dict_simple.items():
@@ -61,6 +66,16 @@ class Area:
                 self.other_players[k].kill()
                 del self.other_players[k]
             self.must_update = False
+
+    def layout_setup(self, layout):
+        for sprite_type, positions in layout.items():
+            if sprite_type.startswith("tile"):
+                pass
+            else:
+                for sprite_pos in positions:
+                    img = pygame.image.load(f"../poke_assets/search/{sprite_type}").convert_alpha()
+                    img.set_colorkey(16777215)
+                    Prop([self.visible_grp, self.collide_grp], sprite_pos, img)
 
     def update(self, dt):
         self.updated = pygame.time.get_ticks()

@@ -66,4 +66,10 @@ etime = time.time()
 print(f"{len([item for sublist in area_sprites.values() for item in sublist])} sprites found: {area_sprites}")
 print(f"Total run time: {etime - stime} seconds")
 
-
+area = "celadon_city.png"
+with open("layouts.json") as f:
+    layouts = json.load(f)
+layouts[area] = area_sprites
+print(layouts)
+with open("layouts.json", "w") as f:
+    json.dump(layouts, f)
