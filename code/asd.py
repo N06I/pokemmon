@@ -1,28 +1,29 @@
 import pygame
-import numpy
+import time
+import numpy as np
+import os
 
-green = pygame.surfarray.array2d(pygame.image.load("../poke_assets/search/fence1.png"))
-# otro = pygame.surfarray.array2d(pygame.image.load("../poke_assets/tree1-test5.svg"))
 
-for col in green:
-    print()
-    for px in col:
-        print(px, end=" ")
+bg = pygame.surfarray.array2d(pygame.image.load("../poke_assets/fireRed_leafGreen/backgrounds/celadon_city.png"))
 
-# colors = {}
-# for col in range(len(green)):
-#     for row in range(len(green[col])):
-#         if green[col][row] not in colors:
-#             colors[green[col][row]] = (col, row)
-# print("Colors found:")
-# for color, pos in colors.items():
-#     print(color, pos)
-#
-# colors = {}
-# for col in range(len(otro)):
-#     for row in range(len(otro[col])):
-#         if otro[col][row] not in colors:
-#             colors[otro[col][row]] = (col, row)
-# print("Colors found:")
-# for color, pos in colors.items():
-#     print(color, pos)
+sprite_patterns = {}
+path = "../poke_assets/search/"
+for pwd, dirs, files in os.walk(path):
+    for file in files:
+        sprite_patterns[file] = pygame.surfarray.array2d(pygame.image.load(f"{path}{file}"))
+
+matches = []
+stime = time.time()
+# working image comparator :D
+for pattern_name in sprite_patterns.keys():
+    pattern = sprite_patterns[pattern_name]
+    for col in range((len(bg) - len(pattern) + 1)):
+        for compared_area_start in range((len(bg[col]) - len(pattern[0]) + 1)):
+            against = bg[col:col + len(pattern), compared_area_start:compared_area_start + len(pattern[0])]
+            if np.array_equal(pattern, against):
+                print(f"Pattern MATCH! at ({col}, {compared_area_start}) for pattern {pattern_name}\n")
+                matches.append((col, compared_area_start))
+
+etime = time.time()
+print(f"{len(matches)} total matches: {matches}")
+print(f"Total run time: {etime - stime} seconds")
