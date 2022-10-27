@@ -32,6 +32,6 @@ def get_sprite_assets(name):
 
 
 def get_layout(area):
-    with open("layouts.json") as f:
+    with open("../gamedata/layouts.json") as f:
         layouts = json.load(f)
         return layouts[f"{area}.png"]
