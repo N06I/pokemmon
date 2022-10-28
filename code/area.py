@@ -2,9 +2,9 @@ import pygame
 
 from cameras import YSortCam, YSortCenterCam
 from character import Character, OtherPlayer
-from raw import areaExits
+from raw import areaExits, spriteHitboxes
 from file_management import get_layout
-from prop import Prop
+from layout_sprites import Prop, LongProp
 
 
 class Area:
@@ -69,9 +69,23 @@ class Area:
 
     def layout_setup(self, layout):
         for sprite_type, positions in layout.items():
-            if sprite_type.startswith("tile"):
+            if sprite_type.startswith("tile"):  # for things like slowing ground and shit
                 pass
-            else:
+            elif sprite_type.startswith("d_"):    # for buildings with doors
+                pass
+            elif sprite_type.startswith("left"):
+                sprite = f"{sprite_type.split('left_')[1]}"
+                righties = layout[f"right_{sprite}"]
+                # searches for the nearest right side of this prop to create a longer single object instead of several
+                for sprite_pos in positions:
+                    righty = (50000, sprite_pos[1])
+                    for rightie in righties:
+                        if sprite_pos[0] < rightie[0] < righty[0] and rightie[1] == righty[1]:
+                            righty = rightie
+                    print(f"Left: {sprite_pos} Right: {righty}")
+                    LongProp([self.collide_grp], sprite_pos,
+                             (righty[0]+spriteHitboxes[sprite][0], righty[1]+spriteHitboxes[sprite][1]))
+            elif not sprite_type.startswith("right"):
                 for sprite_pos in positions:
                     img = pygame.image.load(f"../poke_assets/search/{sprite_type}").convert_alpha()
                     img.set_colorkey(16777215)

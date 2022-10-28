@@ -23,4 +23,5 @@ areaExits = {
     }
 }
 
-spriteHitboxes = {"fence1.png": 1}
+spriteHitboxes = {"fence1.png": 1,
+                  "ledge1.png": (16, 8)}
