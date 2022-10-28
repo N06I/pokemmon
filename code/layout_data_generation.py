@@ -1,19 +1,16 @@
 import pygame
-import numpy as np
 import time
 import os
+import json
 
 surf = pygame.image.load("../poke_assets/fireRed_leafGreen/backgrounds/celadon_city.png")
-og = pygame.surfarray.array2d(surf)
-# print(f"Image: \n{og}\n")
-search = pygame.surfarray.array2d(pygame.image.load("../poke_assets/search/fence1.png"))
+bg = pygame.surfarray.array2d(surf)
 
-sprite_patterns3 = {}
+sprite_patterns = {}
 path = "../poke_assets/search/"
-for pwd, dirs, files in os.walk("../poke_assets/search/"):
+for pwd, dirs, files in os.walk(path):
     for file in files:
-        # sprite_patterns3.append(pygame.surfarray.array2d(pygame.image.load(f"{path}{file}")))
-        sprite_patterns3[file] = pygame.surfarray.array2d(pygame.image.load(f"{path}{file}"))
+        sprite_patterns[file] = pygame.surfarray.array2d(pygame.image.load(f"{path}{file}"))
 
 
 def matching(pattern, against):
@@ -23,8 +20,6 @@ def matching(pattern, against):
     check = rows // 2
     for col in range(cols):
         # if they're equal, do nothing (skip to next iteration)
-        a = pattern[col][check]
-        b = against[col][check]
         if pattern[col][check] == against[col][check]:
             continue
         # if they're different but pixel on pattern is transparent, skip to next iteration
@@ -54,31 +49,27 @@ def matching(pattern, against):
     return True
 
 
-matches = []
+area_sprites = {}
 stime = time.time()
 # working image comparator :D
-for pattern_name in sprite_patterns3.keys():
-    pattern = sprite_patterns3[pattern_name]
-    for col in range(0, (len(og) - len(pattern) + 1), 8):
-        for compared_area_start in range(0, (len(og[col]) - len(pattern[0]) + 1), 8):
-            against = og[col:col + len(pattern), compared_area_start:compared_area_start + len(pattern[0])]
+for pattern_name in sprite_patterns.keys():
+    pattern = sprite_patterns[pattern_name]
+    area_sprites[pattern_name] = []
+    for col in range(0, (len(bg) - len(pattern) + 1), 8):
+        for compared_area_start in range(0, (len(bg[col]) - len(pattern[0]) + 1), 8):
+            against = bg[col:col + len(pattern), compared_area_start:compared_area_start + len(pattern[0])]
             if matching(pattern, against):
                 print(f"Pattern MATCH! at ({col}, {compared_area_start}) for pattern {pattern_name}\n")
-                matches.append((col, compared_area_start))
+                area_sprites[pattern_name].append((col, compared_area_start))
 
 etime = time.time()
-print(f"{len(matches)} total matches: {matches}")
+print(f"{len([item for sublist in area_sprites.values() for item in sublist])} sprites found: {area_sprites}")
 print(f"Total run time: {etime - stime} seconds")
 
-
-# sys.exit()
-# pygame.init()
-# screen = pygame.display.set_mode((300, 240))
-#
-# while True:
-#     for event in pygame.event.get():
-#         if event.type == pygame.QUIT:
-#             pygame.quit()
-#             sys.exit()
-#     screen.blit(pygame.transform.scale(surf, (300, 240)), (0, 0))
-#     pygame.display.update()
+area = "celadon_city.png"
+with open("../gamedata/layouts.json") as f:
+    layouts = json.load(f)
+layouts[area] = area_sprites
+print(layouts)
+with open("../gamedata/layouts.json", "w") as f:
+    json.dump(layouts, f)
