@@ -39,7 +39,7 @@ class World:
         if exitdata:
             self.load_area(exitdata)
 
-    def async_update(self):
+    def async_update(self):     # runs in a separate thread; sets must_update so area knows an update was received
         while True:
             time.sleep(0.005)   # need to sleep to not overwhelm OS with crazy amounts of unnecessary update requests
             self.area.player_dict_simple = self.client.instance_update(self.area.character)

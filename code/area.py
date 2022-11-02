@@ -18,7 +18,7 @@ class Area:
         self.updated = None
         self.must_update = False
         # run threaded function that loops infinitely while area is loaded and handles server sync updating
-        # asynchronically to avoid lag on non-zero ms clients       !!! IMPORTANT !!!
+        # asynchronously to avoid lag on non-zero ms clients       !!! IMPORTANT !!!
 
         # area loading
         self.exits = areaExits[self.area_name].keys()
@@ -40,7 +40,7 @@ class Area:
         # layout sprites
         self.layout_setup(get_layout(self.area_name))
 
-    def check_update(self):
+    def check_update(self):  # runs every tick (NOT THREADED); updates area if must_update was toggled by async_update()
         if self.must_update:
             for pid, playerdata in self.player_dict_simple.items():
                 if pid not in self.other_players:
