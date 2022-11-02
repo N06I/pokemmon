@@ -17,8 +17,6 @@ class Area:
         self.area_name = areadata[0]
         self.updated = None
         self.must_update = False
-        # run threaded function that loops infinitely while area is loaded and handles server sync updating
-        # asynchronously to avoid lag on non-zero ms clients       !!! IMPORTANT !!!
 
         # area loading
         self.exits = areaExits[self.area_name].keys()
