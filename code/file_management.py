@@ -13,7 +13,7 @@ def load_gamestate(pid):
 
 
 def make_game(pid):
-    newdict = {"gamestate": ("bill_house", (320, 184))}
+    newdict = {"gamestate": ("bill_house", (120, 90))}
     with open(f"../gamedata/data.json", "w") as file:
         json.dump(newdict, file)
     return True

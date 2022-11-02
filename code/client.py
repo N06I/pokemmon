@@ -9,7 +9,7 @@ class Client:
         self.FORMAT = "utf-8"
         self.DISCONNECT_MESSAGE = "!DISCONNECT"
         self.SERVER = socket.gethostbyname(socket.gethostname())  # replace for actual server's ip unless self-hosting
-        self.SERVER = "192.168.0.13"
+        self.SERVER = "192.168.178.46"
         self.ADDR = (self.SERVER, self.PORT)
 
         self.client = socket.socket(socket.AF_INET, socket.TCP_NODELAY)

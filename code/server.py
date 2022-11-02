@@ -10,7 +10,7 @@ class Server:
         self.HEADER = 16
         self.PORT = 5050
         self.SERVER = socket.gethostbyname(socket.gethostname())  # gets host's IP
-        self.SERVER = "192.168.0.13"
+        self.SERVER = "192.168.178.46"
         print(f"Hosting at [{self.SERVER}]")
         self.ADDR = (self.SERVER, self.PORT)
         self.DISCONNECT_MESSAGE = "!DISCONNECT"
@@ -68,7 +68,7 @@ class Server:
                             self.player_cnt += 1
                             print(f"[NEW GAME] created, for player {self.player_cnt}")
                             self.current_areas.append("bill_house")
-                            self.loaded_players["bill_house"][self.player_cnt] = ((320, 184), "walk_down")
+                            self.loaded_players["bill_house"][self.player_cnt] = ((120, 90), "walk_down")
                             self.send(conn, pid)
                             descr = f"NEW_GAME({self.player_cnt})"
                         elif msg >= 0:  # if not new game, sets the right pid to the (current) method execution

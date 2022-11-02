@@ -7,6 +7,7 @@ class Character(Entity):
         super().__init__(position, groups, atkables, collidables, tiles)
         self.image = pygame.Surface((16, 16), pygame.SRCALPHA)
         self.rect = self.image.get_rect(midbottom=position)
+        self.hitbox = pygame.rect.Rect(self.rect.left, self.rect.top + self.rect.height/3, self.rect.width, self.rect.height/4)
 
     def key_input(self):
         keys = pygame.key.get_pressed()
@@ -46,6 +47,7 @@ class Character(Entity):
         self.move(dt)
         self.animate(dt)
         # print(self.state)
+        print(self.position)
 
 
 class OtherPlayer(Character):

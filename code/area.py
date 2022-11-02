@@ -4,12 +4,10 @@ from cameras import YSortCam, YSortCenterCam
 from character import Character, OtherPlayer
 from raw import areaExits, spriteHitboxes
 from file_management import get_layout
-from layout_sprites import Prop, LongProp
+from layout_sprites import *
 
 
 class Area:
-    # area class settings
-    staticCamAreas = ["bill_house"]
 
     def __init__(self, areadata, client, pid, base_display):
         # tech setup
@@ -34,7 +32,7 @@ class Area:
         self.char_grp = pygame.sprite.GroupSingle()
         self.character = Character(areadata[1], [self.char_grp],
                                    self.atkable_grp, self.collide_grp, self.tile_grp)
-        self.visible_grp = YSortCam(self.character, self.background, self.base_display) if self.area_name in self.staticCamAreas else YSortCenterCam(self.character, self.background, self.base_display)
+        self.visible_grp = YSortCenterCam(self.character, self.background, self.base_display)
         self.character.add(self.visible_grp)
         self.other_players = {self.pid: self.character}
         self.player_dict_simple = {}
@@ -48,9 +46,9 @@ class Area:
                 if pid not in self.other_players:
                     print(f"Player {pid} created at {playerdata[0]}.")
                     self.other_players[pid] = OtherPlayer(playerdata[0],
-                                                               [self.visible_grp],
-                                                               self.atkable_grp, self.collide_grp,
-                                                               self.tile_grp)
+                                                          [self.visible_grp],
+                                                          self.atkable_grp, self.collide_grp,
+                                                          self.tile_grp)
             for pid, playerdata in self.player_dict_simple.items():
                 if pid in self.player_dict_simple.keys() and pid != self.pid and pid in self.other_players:
                     self.other_players[pid].position = playerdata[0]
@@ -69,11 +67,8 @@ class Area:
 
     def layout_setup(self, layout):
         for sprite_type, positions in layout.items():
-            if sprite_type.startswith("tile"):  # for things like slowing ground and shit
-                pass
-            elif sprite_type.startswith("d_"):    # for buildings with doors
-                pass
-            elif sprite_type.startswith("left"):
+
+            if sprite_type.startswith("left"):  # for creating n-length hitbox based on indicators like sides of a ledge
                 sprite = f"{sprite_type.split('left_')[1]}"
                 righties = layout[f"right_{sprite}"]
                 # searches for the nearest right side of this prop to create a longer single object instead of several
@@ -83,13 +78,25 @@ class Area:
                         if sprite_pos[0] < rightie[0] < righty[0] and rightie[1] == righty[1]:
                             righty = rightie
                     print(f"Left: {sprite_pos} Right: {righty}")
-                    LongProp([self.collide_grp], sprite_pos,
-                             (righty[0]+spriteHitboxes[sprite][0], righty[1]+spriteHitboxes[sprite][1]))
-            elif not sprite_type.startswith("right"):
+                    LongHidden([self.collide_grp], sprite_pos,
+                               (righty[0] + spriteHitboxes[sprite][0], righty[1] + spriteHitboxes[sprite][1]))
+            elif not sprite_type.startswith("right"):  # avoid "right" elements, they're taken care of by their "left"
+                img = pygame.image.load(f"../poke_assets/search/{sprite_type}").convert_alpha()
+                img.set_colorkey(16777215)
+                singletile = False
+                if sprite_type.startswith("tile"):  # for things like slowing ground and shit
+                    groups = [self.visible_grp, self.tile_grp]
+                elif sprite_type.startswith("d_"):  # for buildings with doors, doors will prob be their own object
+                    groups = [self.visible_grp, self.collide_grp]
+                elif sprite_type.startswith("v_"):  # for purely visual sprites
+                    groups = [self.visible_grp]
+                elif sprite_type.startswith("prop"):  # for 16x16 hitbox sprites
+                    groups = [self.visible_grp, self.collide_grp]
+                    singletile = True
+                else:           # for sprites with other hitbox shapes
+                    groups = [self.visible_grp, self.collide_grp]
                 for sprite_pos in positions:
-                    img = pygame.image.load(f"../poke_assets/search/{sprite_type}").convert_alpha()
-                    img.set_colorkey(16777215)
-                    Prop([self.visible_grp, self.collide_grp], sprite_pos, img)
+                    Prop(groups, sprite_pos, img, singletile)
 
     def update(self, dt):
         self.updated = pygame.time.get_ticks()

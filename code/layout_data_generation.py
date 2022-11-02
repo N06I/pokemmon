@@ -2,15 +2,7 @@ import pygame
 import time
 import os
 import json
-
-surf = pygame.image.load("../poke_assets/fireRed_leafGreen/backgrounds/celadon_city.png")
-bg = pygame.surfarray.array2d(surf)
-
-sprite_patterns = {}
-path = "../poke_assets/search/"
-for pwd, dirs, files in os.walk(path):
-    for file in files:
-        sprite_patterns[file] = pygame.surfarray.array2d(pygame.image.load(f"{path}{file}"))
+import numpy as np
 
 
 def matching(pattern, against):
@@ -49,27 +41,44 @@ def matching(pattern, against):
     return True
 
 
-area_sprites = {}
-stime = time.time()
-# working image comparator :D
-for pattern_name in sprite_patterns.keys():
-    pattern = sprite_patterns[pattern_name]
-    area_sprites[pattern_name] = []
-    for col in range(0, (len(bg) - len(pattern) + 1), 8):
-        for compared_area_start in range(0, (len(bg[col]) - len(pattern[0]) + 1), 8):
-            against = bg[col:col + len(pattern), compared_area_start:compared_area_start + len(pattern[0])]
-            if matching(pattern, against):
-                print(f"Pattern MATCH! at ({col}, {compared_area_start}) for pattern {pattern_name}\n")
-                area_sprites[pattern_name].append((col, compared_area_start))
+def generate_layout(area, sprite_patterns):
+    bg = pygame.surfarray.array2d(pygame.image.load(f"../poke_assets/fireRed_leafGreen/backgrounds/{area}"))
+    with open("../gamedata/layouts.json") as f:
+        layouts = json.load(f)
+    if area not in layouts:
+        layouts[area] = {}
+    area_sprites = {}
+    stime = time.time()
+    # working image comparator :D
+    for pattern_name in sprite_patterns.keys():
+        pattern = sprite_patterns[pattern_name]
+        area_sprites[pattern_name] = []
+        for col in range(0, (len(bg) - len(pattern) + 1), 8):
+            for compared_area_start in range(0, (len(bg[col]) - len(pattern[0]) + 1), 8):
+                against = bg[col:col + len(pattern), compared_area_start:compared_area_start + len(pattern[0])]
+                if matching(pattern, against):
+                    print(f"Pattern MATCH! at ({col}, {compared_area_start}) for pattern {pattern_name}\n")
+                    area_sprites[pattern_name].append((col, compared_area_start + len(pattern[0])))
+        if len(area_sprites[pattern_name]) == 0:
+            del area_sprites[pattern_name]
+    etime = time.time()
+    print(f"{len([item for sublist in area_sprites.values() for item in sublist])} sprites found: {area_sprites}")
+    print(f"Total run time for {area}: {etime - stime} seconds")
+    layouts[area] = area_sprites
+    with open("../gamedata/layouts.json", "w") as f:
+        json.dump(layouts, f, indent=2)
 
-etime = time.time()
-print(f"{len([item for sublist in area_sprites.values() for item in sublist])} sprites found: {area_sprites}")
-print(f"Total run time: {etime - stime} seconds")
 
-area = "celadon_city.png"
-with open("../gamedata/layouts.json") as f:
-    layouts = json.load(f)
-layouts[area] = area_sprites
-print(layouts)
-with open("../gamedata/layouts.json", "w") as f:
-    json.dump(layouts, f)
+def generate_all_layouts():
+    sprite_patterns = {}
+    path = "../poke_assets/search/"
+    for pwd, dirs, files in os.walk(path):
+        for file in files:
+            sprite_patterns[file] = pygame.surfarray.array2d(pygame.image.load(f"{path}{file}"))
+
+    for pwd, dirs, files in os.walk("../poke_assets/fireRed_leafGreen/backgrounds/"):
+        for file in files:
+            generate_layout(file, sprite_patterns)
+
+
+generate_all_layouts()

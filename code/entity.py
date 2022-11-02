@@ -13,7 +13,7 @@ class Entity(pygame.sprite.Sprite):
 
         # general setup
         self.surf = pygame.Surface((10, 10))
-        self.rect = self.surf.get_rect(topleft=(0, 0))
+        self.rect = self.surf.get_rect(topleft=(0, 0))  # ????
         self.hitbox = pygame.rect.Rect(self.rect.left, self.rect.top + self.rect.height/3, self.rect.width, self.rect.height/4)
         self.atkableSprites = atkables
         self.collidableSprites = collidables
@@ -87,7 +87,7 @@ class Entity(pygame.sprite.Sprite):
         self.hitbox.midbottom = self.position
 
         for collidable in self.collidableSprites:
-            if self.rect.colliderect(collidable.rect):
+            if self.hitbox.colliderect(collidable.hitbox):
                 print("Collision !")
 
     def animate(self, dt):

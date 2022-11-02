@@ -10,10 +10,10 @@ animData = {
 
 areaExits = {
     "bill_house": {
-        (320, 280): ("celadon_city", (664, 537))
+        (120, 167): ("celadon_city", (664, 537))
     },
     "celadon_city": {
-        (664, 527): ("bill_house", (320, 270)),
+        (664, 527): ("bill_house", (120, 167)),
         (248, 290): ("celadon_mall_f1", (168, 254)),
         (184, 290): ("celadon_mall_f1", (40, 254))
     },
