@@ -23,7 +23,7 @@ class Server:
 
         self.loaded_players = {"bill_house": {}}     # players loaded in each area, by playerId
         #     "bill_house": {        # example data
-        #         2: PlayerZip(),
+        #         2: PlayerZip(),    # PlayerZip is deprecated; now a tuple: (player.position, player.state)
         #         0: PlayerZip(),
         #         5: PlayerZip()},
         #     "celadon_city": {

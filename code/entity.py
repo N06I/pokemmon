@@ -40,7 +40,7 @@ class Entity(pygame.sprite.Sprite):
 
         # combat
         self.cooldowns = {}
-        self.stats = {"movespeed": 140, "action_speed": 1}
+        self.stats = {"movespeed": 160, "action_speed": 1}  # good ms amt = 140 ~ 150
         self.weight = 50
 
     @property

@@ -19,7 +19,13 @@ areaExits = {
     },
     "celadon_mall_f1": {
         (168, 260): ("celadon_city", (248, 296)),
-        (40, 260): ("celadon_city", (184, 296))
+        (40, 260): ("celadon_city", (184, 296)),
+        (54, 44): ("celadon_mall_f2", (60, 40)),
+        (54, 50): ("celadon_mall_f2", (60, 46))
+    },
+    "celadon_mall_f2": {
+        (44, 40): ("celadon_mall_f1", (74, 44)),
+        (44, 46): ("celadon_mall_f1", (74, 50))
     }
 }
 

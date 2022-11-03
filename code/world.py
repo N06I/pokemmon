@@ -20,8 +20,10 @@ class World:
         self.new_area = False
         self.loaded_areas = {}  # {"area1": areaObject} | made a dict to access area names, could be an object list
         self.load_area(areadata)
-        thread = threading.Thread(target=self.async_update)
-        thread.start()
+
+        self.end = False
+        self.update_thread = threading.Thread(target=self.async_update)
+        self.update_thread.start()
 
     def load_area(self, areadata):
         self.area = Area(areadata, self.client, self.pid, self.base_display)
@@ -41,6 +43,8 @@ class World:
 
     def async_update(self):     # runs in a separate thread; sets must_update so area knows an update was received
         while True:
+            if self.end:
+                break
             time.sleep(0.005)   # need to sleep to not overwhelm OS with crazy amounts of unnecessary update requests
             self.area.player_dict_simple = self.client.instance_update(self.area.character)
             self.area.must_update = True

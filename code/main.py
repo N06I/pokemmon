@@ -42,7 +42,9 @@ class Game:
             prev_time = tyme
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.world.end = True
                     self.client.send(self.client.DISCONNECT_MESSAGE)
+                    time.sleep(0.5)
                     pygame.quit()
                     sys.exit()
 

@@ -57,13 +57,13 @@ def generate_layout(area, sprite_patterns):
             for compared_area_start in range(0, (len(bg[col]) - len(pattern[0]) + 1), 8):
                 against = bg[col:col + len(pattern), compared_area_start:compared_area_start + len(pattern[0])]
                 if matching(pattern, against):
-                    print(f"Pattern MATCH! at ({col}, {compared_area_start}) for pattern {pattern_name}\n")
+                    # print(f"Pattern MATCH! at ({col}, {compared_area_start}) for pattern {pattern_name}")
                     area_sprites[pattern_name].append((col, compared_area_start + len(pattern[0])))
         if len(area_sprites[pattern_name]) == 0:
             del area_sprites[pattern_name]
     etime = time.time()
     print(f"{len([item for sublist in area_sprites.values() for item in sublist])} sprites found: {area_sprites}")
-    print(f"Total run time for {area}: {etime - stime} seconds")
+    print(f"Total run time for {area}: {etime - stime} seconds\n")
     layouts[area] = area_sprites
     with open("../gamedata/layouts.json", "w") as f:
         json.dump(layouts, f, indent=2)
@@ -76,9 +76,12 @@ def generate_all_layouts():
         for file in files:
             sprite_patterns[file] = pygame.surfarray.array2d(pygame.image.load(f"{path}{file}"))
 
+    s_time = time.time()
     for pwd, dirs, files in os.walk("../poke_assets/fireRed_leafGreen/backgrounds/"):
         for file in files:
             generate_layout(file, sprite_patterns)
+    e_time = time.time()
+    print(f"Total full game sprite recognition script run time: {e_time - s_time} seconds\n")
 
 
 generate_all_layouts()
