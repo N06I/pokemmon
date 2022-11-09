@@ -1,5 +1,4 @@
 import pygame
-from raw import spriteHitboxes
 
 
 class Prop(pygame.sprite.Sprite):
@@ -8,7 +7,7 @@ class Prop(pygame.sprite.Sprite):
         self.image = image
         self.rect = self.image.get_rect(bottomleft=position)
         if singletile:
-            self.hitbox = pygame.Rect(self.rect.left, self.rect.bottom - 12, 16, 12)
+            self.hitbox = pygame.Rect(self.rect.left+1, self.rect.bottom - 12, 14, 12)
         else:
             if full:
                 self.hitbox = self.rect.copy()

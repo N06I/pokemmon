@@ -4,7 +4,7 @@ import pygame
 import threading
 
 from area import Area
-from raw import areaExits
+from raw import areaExits, exitLinks
 from character import OtherPlayer
 
 
@@ -31,15 +31,21 @@ class World:
         self.loaded_areas[self.area_name] = self.area   # currently useless bc server handles area loading
         self.new_area = True
         # self.client.update_server_area(self.area_name)
+        print(areaExits)
 
     def check_exits(self):
+        char_hbx = self.area.character.hitbox
         exitdata = None
-        for exitpoint in self.area.exits:
-            if self.area.character.hitbox.collidepoint(exitpoint):
-                exitdata = areaExits[self.area_name][exitpoint]
-            # print("exit: ", exitpoint, " char:", self.area.character.rect.midbottom)
+        for i, exitrect in enumerate(self.area.exits):
+            if char_hbx.colliderect(exitrect):
+                spawnrect = exitLinks[self.area_name][i][1]
+                spawnx = spawnrect.centerx + spawnrect.width * (char_hbx.centerx - exitrect.centerx) / exitrect.width
+                spawny = spawnrect.top + spawnrect.height * (char_hbx.centery - exitrect.top) / exitrect.height
+                exitdata = (exitLinks[self.area_name][i][0], (spawnx, spawny))
+            # print("exit: ", exit, " char:", self.area.character.rect.midbottom)
         if exitdata:
-            self.load_area(exitdata)
+            if pygame.key.get_pressed()[pygame.K_e]:
+                self.load_area(exitdata)
 
     def async_update(self):     # runs in a separate thread; sets must_update so area knows an update was received
         while True:

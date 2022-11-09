@@ -2,7 +2,7 @@ import pygame
 
 from cameras import YSortCam, YSortCenterCam
 from character import Character, OtherPlayer
-from raw import areaExits, spriteHitboxes
+from raw import areaExits
 from file_management import get_layout
 from layout_sprites import *
 
@@ -19,7 +19,7 @@ class Area:
         self.must_update = False
 
         # area loading
-        self.exits = areaExits[self.area_name].keys()
+        self.exits = areaExits[self.area_name]
         self.background = pygame.image.load(
             f"../poke_assets/fireRed_leafGreen/backgrounds/{self.area_name}.png").convert_alpha()
 
@@ -81,6 +81,7 @@ class Area:
             elif sprite_type.startswith("full"):
                 groups = [self.visible_grp, self.collide_grp]
                 fullh = True
+            # elif sprite_type.startswith("tree"):
             else:           # for sprites with other hitbox shapes
                 groups = [self.visible_grp, self.collide_grp]
             for sprite_pos in positions:

@@ -88,7 +88,14 @@ class Entity(pygame.sprite.Sprite):
 
         for collidable in self.collidableSprites:
             if self.hitbox.colliderect(collidable.hitbox):
-                print("Collision !")
+                # if (self.hitbox.top - collidable.hitbox.top < 2) or (self.hitbox.bottom - collidable.hitbox.bottom < 2):
+                #     self.position[1] -= finalV.y * dt
+                # if (self.hitbox.left - collidable.hitbox.left < 2) or (self.hitbox.right - collidable.hitbox.right < 2):
+                #     self.position[0] -= finalV.x * dt
+                self.position -= finalV * dt
+                self.rect.midbottom = self.position
+                self.hitbox.midbottom = self.position
+
 
     def animate(self, dt):
         if self.anim_idx >= self.anim_len:

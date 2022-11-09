@@ -9,7 +9,7 @@ class Character(Entity):
         self.rect = self.image.get_rect(midbottom=position)
         self.hitbox = pygame.rect.Rect(self.rect.left, self.rect.top + self.rect.height/2, self.rect.width, self.rect.height/2)
 
-    def key_input(self):
+    def action_input(self):
         keys = pygame.key.get_pressed()
 
         self.inputV = pygame.Vector2()
@@ -43,7 +43,7 @@ class Character(Entity):
 
     def update(self, dt):
         self.cool_down(dt)
-        self.key_input()
+        self.action_input()
         self.move(dt)
         self.animate(dt)
         # print(self.state)
