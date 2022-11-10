@@ -5,9 +5,9 @@ class YSortCam(pygame.sprite.Group):
     def __init__(self, character, background, base_display):
         super().__init__()
         self.screen = base_display
-        self.screen_center = (self.screen.get_size()[0]/2, self.screen.get_size()[1]/2)
+        self.screen_size = self.screen.get_size()
         self.background = background
-        self.bg_rect = self.background.get_rect(center=self.screen_center)
+        self.bg_rect = self.background.get_rect(center=self.screen_size)
         self.character = character
 
     def custom_draw(self):
@@ -21,8 +21,8 @@ class YSortCenterCam(YSortCam):
         super().__init__(character, background, base_display)
 
     def custom_draw(self):
-        displacement = (self.screen_center[0] - self.character.rect.centerx, self.screen_center[1] - self.character.rect.centery)
+        displacement = (self.screen_size[0]/2 - self.character.rect.centerx, self.screen_size[1]/2 - self.character.rect.centery)
         self.screen.blit(self.background, displacement)
         for sprite in sorted(self.sprites(), key=lambda x: x.rect.bottom):
-            offset = (sprite.rect.left + displacement[0], sprite.rect.top + displacement[1])
-            self.screen.blit(sprite.image, offset)
+            screen_pos = (sprite.rect.left + displacement[0], sprite.rect.top + displacement[1])
+            self.screen.blit(sprite.image, screen_pos)

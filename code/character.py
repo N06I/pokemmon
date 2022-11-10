@@ -3,8 +3,9 @@ from entity import Entity
 
 
 class Character(Entity):
-    def __init__(self, position, groups, atkables, collidables, tiles):
+    def __init__(self, game, position, groups, atkables, collidables, tiles):
         super().__init__(position, groups, atkables, collidables, tiles)
+        self.game = game
         self.image = pygame.Surface((16, 16), pygame.SRCALPHA)
         self.rect = self.image.get_rect(midbottom=position)
         self.hitbox = pygame.rect.Rect(self.rect.left, self.rect.top + self.rect.height/2, self.rect.width, self.rect.height/2)
@@ -43,11 +44,12 @@ class Character(Entity):
 
     def update(self, dt):
         self.cool_down(dt)
-        self.action_input()
+        if not self.game.chatting:
+            self.action_input()
         self.move(dt)
         self.animate(dt)
         # print(self.state)
-        print(self.position)
+        print("Char: ", self.hitbox)
 
 
 class OtherPlayer(Character):

@@ -9,8 +9,9 @@ from layout_sprites import *
 
 class Area:
 
-    def __init__(self, areadata, client, pid, base_display):
+    def __init__(self, game, areadata, client, pid, base_display):
         # tech setup
+        self.game = game
         self.client = client
         self.pid = pid
         self.base_display = base_display
@@ -28,7 +29,7 @@ class Area:
         self.collide_grp = pygame.sprite.Group()
         self.tile_grp = pygame.sprite.Group()
         self.char_grp = pygame.sprite.GroupSingle()
-        self.character = Character(areadata[1], [self.char_grp],
+        self.character = Character(self.game, areadata[1], [self.char_grp],
                                    self.atkable_grp, self.collide_grp, self.tile_grp)
         self.visible_grp = YSortCenterCam(self.character, self.background, self.base_display)
         self.character.add(self.visible_grp)

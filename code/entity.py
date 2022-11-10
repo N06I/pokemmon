@@ -14,7 +14,8 @@ class Entity(pygame.sprite.Sprite):
         # general setup
         self.surf = pygame.Surface((10, 10))
         self.rect = self.surf.get_rect(topleft=(0, 0))  # ????
-        self.hitbox = pygame.rect.Rect(self.rect.left, self.rect.top + self.rect.height/3, self.rect.width, self.rect.height/4)
+        self.hitbox = pygame.rect.Rect(self.rect.left, self.rect.top + self.rect.height / 3, self.rect.width,
+                                       self.rect.height / 4)
         self.atkableSprites = atkables
         self.collidableSprites = collidables
         self.tileSprites = tiles
@@ -44,8 +45,9 @@ class Entity(pygame.sprite.Sprite):
         self.weight = 50
 
     @property
-    def effective_msV(self):    # movespeed with buff
-        return self.stats["movespeed"] if "movespeed" not in self.buffs else self.stats["movespeed"] + self.buffs["movespeed"]
+    def effective_msV(self):  # movespeed with buff
+        return self.stats["movespeed"] if "movespeed" not in self.buffs else self.stats["movespeed"] + self.buffs[
+            "movespeed"]
 
     def set_action(self, new):
         if new not in self.state:
@@ -79,7 +81,8 @@ class Entity(pygame.sprite.Sprite):
                 self.current_tile = tile
 
         # decelerate based on self's weight and terrain friction
-        finalV -= ((self.current_tile.coef * self.weight) if drag_tile else self.weight * 2) * finalV.normalize() if finalV.magnitude() != 0 else pygame.Vector2()
+        finalV -= ((
+                               self.current_tile.coef * self.weight) if drag_tile else self.weight * 2) * finalV.normalize() if finalV.magnitude() != 0 else pygame.Vector2()
 
         # finally apply movement with delta time
         self.position += finalV * dt
@@ -95,7 +98,6 @@ class Entity(pygame.sprite.Sprite):
                 self.position -= finalV * dt
                 self.rect.midbottom = self.position
                 self.hitbox.midbottom = self.position
-
 
     def animate(self, dt):
         if self.anim_idx >= self.anim_len:
@@ -130,7 +132,7 @@ class Entity(pygame.sprite.Sprite):
     def cool_down(self, dt):
         tick = pygame.time.get_ticks()
         delet_this = []
-        for skill, timings in self.cooldowns.items():   # timings = (cd, start_tick)
+        for skill, timings in self.cooldowns.items():  # timings = (cd, start_tick)
             if tick - timings[1] > timings[0]:
                 delet_this.append(skill)
         for s in delet_this:

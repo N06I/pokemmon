@@ -49,7 +49,7 @@ def mk_link(area1, area2, data1, data2, twoway=True):
         exitLinks[area2].append((area1, rect1))
 
 
-links = [["bill_house", "celadon_city", [106, 166, 25, 1], [656, 539, 15, 1]]]
+links = [["bill_house", "celadon_city", [106, 166, 25, 1], [656, 535, 15, 1]]]
 
 for link in links:
     mk_link(*link)

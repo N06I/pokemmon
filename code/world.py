@@ -9,7 +9,8 @@ from character import OtherPlayer
 
 
 class World:
-    def __init__(self, areadata, client, pid, base_display):   # just send a player data object instead of playerpos
+    def __init__(self, game, areadata, client, pid, base_display):   # just send a player data object instead of playerpos
+        self.game = game
         self.client = client
         self.pid = pid
         self.base_display = base_display
@@ -26,7 +27,7 @@ class World:
         self.update_thread.start()
 
     def load_area(self, areadata):
-        self.area = Area(areadata, self.client, self.pid, self.base_display)
+        self.area = Area(self.game, areadata, self.client, self.pid, self.base_display)
         self.area_name = areadata[0]
         self.loaded_areas[self.area_name] = self.area   # currently useless bc server handles area loading
         self.new_area = True
@@ -39,9 +40,15 @@ class World:
         for i, exitrect in enumerate(self.area.exits):
             if char_hbx.colliderect(exitrect):
                 spawnrect = exitLinks[self.area_name][i][1]
-                spawnx = spawnrect.centerx + spawnrect.width * (char_hbx.centerx - exitrect.centerx) / exitrect.width
-                spawny = spawnrect.top + spawnrect.height * (char_hbx.centery - exitrect.top) / exitrect.height
-                exitdata = (exitLinks[self.area_name][i][0], (spawnx, spawny))
+                if exitrect.width > 1:
+                    x = spawnrect.centerx + spawnrect.width * (char_hbx.centerx - exitrect.centerx) / exitrect.width
+                else:
+                    x = spawnrect.centerx
+                if exitrect.height > 1:
+                    y = spawnrect.centery + spawnrect.height * (char_hbx.centery - exitrect.centery) / exitrect.height
+                else:
+                    y = spawnrect.centery
+                exitdata = (exitLinks[self.area_name][i][0], (x, y))
             # print("exit: ", exit, " char:", self.area.character.rect.midbottom)
         if exitdata:
             if pygame.key.get_pressed()[pygame.K_e]:

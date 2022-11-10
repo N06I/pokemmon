@@ -1,3 +1,4 @@
+import _pickle
 import socket
 import threading
 import pickle
@@ -43,17 +44,18 @@ class Server:
 
         connected = True
         while connected:
+            print("Connetted")
             # each message will come in the form of 2 messages,
             # the first one being a HEADER containing the length of the 2d
-            print("===================================")
-            print("Listening for HEADER: ", time.perf_counter())
             msg_length = conn.recv(self.HEADER).decode(self.FORMAT)  # header
-            print("Header received: ", time.perf_counter())
             if msg_length:  # necessary check; because when a client connects it sends an "empty" (NoneType) message
                 msg_length = int(msg_length)
-                print("Listening for PICKLED dict: ", time.perf_counter())
-                msg = pickle.loads(conn.recv(msg_length))  # actual message
-                print("Pickled dict received: ", time.perf_counter())
+                try:
+                    msg = pickle.loads(conn.recv(msg_length))  # actual message
+                except _pickle.UnpicklingError:
+                    connected = False
+                    print("picklerror")
+                print(f"{time.perf_counter()}: {msg}")
 
                 if type(msg) is tuple:    # msg is ((pos, ition), "state"); requests area frame update
                     area = self.current_areas[pid]      # gets player's data from pid in method execution memory
@@ -79,7 +81,7 @@ class Server:
                             descr = "kekw"
                     except ValueError:
                         if msg == self.DISCONNECT_MESSAGE:  # checks for abrupt disconnection
-                            del self.loaded_players[self.current_areas[pid]][pid]
+                            print("discomesg")
                             connected = False
                             descr = "DC"
                         else:   # if it's a string and not the DC string, it's an area change
@@ -94,7 +96,7 @@ class Server:
                     print(f"[{addr}] requested [{descr}]: {msg} ")
 
                 # conn.send("Msg received".encode(self.FORMAT))
-
+        del self.loaded_players[self.current_areas[pid]][pid]
         conn.close()
 
     def send(self, conn, msg):
