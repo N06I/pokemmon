@@ -49,7 +49,7 @@ class Character(Entity):
         self.move(dt)
         self.animate(dt)
         # print(self.state)
-        print("Char: ", self.hitbox)
+        # print("Char: ", self.hitbox)
 
 
 class OtherPlayer(Character):

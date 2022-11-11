@@ -28,6 +28,7 @@ class Client:
         self.client.send(message)
 
     def request(self, msg):     # requests data by msg string
+        # print("Message:", msg)
         self.send(msg)      # first sends msg string
 
         msg_length = None   # runs until answer is obtained

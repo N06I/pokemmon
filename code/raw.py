@@ -34,10 +34,10 @@ exitLinks = {}
 
 for pwd, dirs, files in os.walk("../poke_assets/fireRed_leafGreen/backgrounds"):
     for file in files:
-        if file.strip(".png") not in areaExits:
-            areaExits[file.strip(".png")] = []
-        if file.strip(".png") not in exitLinks:
-            exitLinks[file.strip(".png")] = []
+        if file[:-4] not in areaExits:
+            areaExits[file[:-4]] = []
+        if file[:-4] not in exitLinks:
+            exitLinks[file[:-4]] = []
 
 
 def mk_link(area1, area2, data1, data2, twoway=True):

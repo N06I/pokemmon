@@ -20,7 +20,8 @@ class Area:
         self.must_update = False
 
         # area loading
-        self.exits = areaExits[self.area_name]
+        if self.area_name in areaExits:
+            self.exits = areaExits[self.area_name]
         self.background = pygame.image.load(
             f"../poke_assets/fireRed_leafGreen/backgrounds/{self.area_name}.png").convert_alpha()
 

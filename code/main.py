@@ -28,13 +28,14 @@ class Game:
         self.clock = pygame.time.Clock()
         self.client = Client()
         self.pid = self.client.set_pid()
+        self.event_loop = []
 
         # for now, I'm just creating a new game each time the game is launched
         self.gamestate = make_game(self.pid)    # returns true
         self.gamestate = load_gamestate(self.pid)   # loads stored tuple: ("areaname", (pos, ition))
 
         self.world = World(self, self.gamestate, self.client, self.pid, self.base_display)
-        self.chat = Chat(self.base_display)
+        self.chat = Chat(self, self.base_display)
         self.chatting = False
 
     def run(self):
@@ -43,22 +44,25 @@ class Game:
             tyme = time.time()
             dt = tyme - prev_time
             prev_time = tyme
-            for event in pygame.event.get():
+            self.event_loop = pygame.event.get()
+            for event in self.event_loop.copy():
                 if event.type == pygame.QUIT:
                     self.world.end = True
-                    self.client.send(self.client.DISCONNECT_MESSAGE)
-                    time.sleep(0.5)
                     pygame.quit()
+                    self.client.send(self.client.DISCONNECT_MESSAGE)
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
+                    # chat toggle
                     if event.key == pygame.K_RETURN:
+                        if self.chatting:
+                            self.chat.send()
                         self.chatting = not self.chatting
 
             self.base_display.fill("#191919")
 
             self.world.run(dt)
             if self.chatting:
-                self.chat.update()
+                self.chat.update(self.event_loop)
             self.screen.blit(pygame.transform.scale(self.base_display, reso), (0, 0))
             pygame.display.update()
             self.clock.tick(60)

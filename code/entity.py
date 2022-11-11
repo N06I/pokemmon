@@ -81,8 +81,7 @@ class Entity(pygame.sprite.Sprite):
                 self.current_tile = tile
 
         # decelerate based on self's weight and terrain friction
-        finalV -= ((
-                               self.current_tile.coef * self.weight) if drag_tile else self.weight * 2) * finalV.normalize() if finalV.magnitude() != 0 else pygame.Vector2()
+        finalV -= ((self.current_tile.coef * self.weight) if drag_tile else self.weight * 2) * finalV.normalize() if finalV.magnitude() != 0 else pygame.Vector2()
 
         # finally apply movement with delta time
         self.position += finalV * dt
@@ -98,6 +97,7 @@ class Entity(pygame.sprite.Sprite):
                 self.position -= finalV * dt
                 self.rect.midbottom = self.position
                 self.hitbox.midbottom = self.position
+                break
 
     def animate(self, dt):
         if self.anim_idx >= self.anim_len:
@@ -137,6 +137,11 @@ class Entity(pygame.sprite.Sprite):
                 delet_this.append(skill)
         for s in delet_this:
             del self.cooldowns[s]
+
+    def teleport(self, pos):
+        self.position = pos
+        self.rect.midbottom = self.position
+        self.hitbox.midbottom = self.position
 
     def update(self, dt):
         self.cool_down(dt)

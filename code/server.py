@@ -22,7 +22,7 @@ class Server:
         self.player_cnt = -1
         self.players = {}
 
-        self.loaded_players = {"bill_house": {}}     # players loaded in each area, by playerId
+        self.loaded_players = {"bill_house": {}}  # players loaded in each area, by playerId
         #     "bill_house": {        # example data
         #         2: PlayerZip(),    # PlayerZip is deprecated; now a tuple: (player.position, player.state)
         #         0: PlayerZip(),
@@ -44,22 +44,24 @@ class Server:
 
         connected = True
         while connected:
-            print("Connetted")
             # each message will come in the form of 2 messages,
             # the first one being a HEADER containing the length of the 2d
             msg_length = conn.recv(self.HEADER).decode(self.FORMAT)  # header
             if msg_length:  # necessary check; because when a client connects it sends an "empty" (NoneType) message
                 msg_length = int(msg_length)
                 try:
-                    msg = pickle.loads(conn.recv(msg_length))  # actual message
+                    peckel = conn.recv(msg_length)
+                    print(peckel)
+                    msg = pickle.loads(peckel)  # actual message
+                    print(msg)
                 except _pickle.UnpicklingError:
                     connected = False
                     print("picklerror")
-                print(f"{time.perf_counter()}: {msg}")
+                # print(f"{time.perf_counter()}: {msg}")
 
-                if type(msg) is tuple:    # msg is ((pos, ition), "state"); requests area frame update
-                    area = self.current_areas[pid]      # gets player's data from pid in method execution memory
-                    self.loaded_players[area][pid] = msg    # stores the received player's current data internally
+                if type(msg) is tuple:  # msg is ((pos, ition), "state"); requests area frame update
+                    area = self.current_areas[pid]  # gets player's data from pid in method execution memory
+                    self.loaded_players[area][pid] = msg  # stores the received player's current data internally
                     self.send(conn, self.loaded_players[area])  # replies with the current area's players' data
                     print("Relevant area data sent: ", time.perf_counter())
 
@@ -84,7 +86,7 @@ class Server:
                             print("discomesg")
                             connected = False
                             descr = "DC"
-                        else:   # if it's a string and not the DC string, it's an area change
+                        else:  # if it's a string and not the DC string, it's an area change
                             old_area = self.current_areas[pid]
                             # pops the player data from his old area and adds it to the new
                             if msg not in self.loaded_players:  # msg is the new area
@@ -94,8 +96,8 @@ class Server:
                             self.send(conn, True)
                             descr = "CHANGED_AREA"
                     print(f"[{addr}] requested [{descr}]: {msg} ")
-
-                # conn.send("Msg received".encode(self.FORMAT))
+            msg = "Not received"
+            # conn.send("Msg received".encode(self.FORMAT))
         del self.loaded_players[self.current_areas[pid]][pid]
         conn.close()
 

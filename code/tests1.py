@@ -1,7 +1,8 @@
-def hi():
-    print("hi")
+streng = "sad"
+cursor = len(streng)
 
-helo = hi
+new_letter = "5"
 
-helo()
-    
+streng = streng[:cursor] + new_letter + streng[cursor:]
+
+print(streng.s)

@@ -47,7 +47,7 @@ class World:
                 if exitrect.height > 1:
                     y = spawnrect.centery + spawnrect.height * (char_hbx.centery - exitrect.centery) / exitrect.height
                 else:
-                    y = spawnrect.centery
+                    y = spawnrect.bottom
                 exitdata = (exitLinks[self.area_name][i][0], (x, y))
             # print("exit: ", exit, " char:", self.area.character.rect.midbottom)
         if exitdata:

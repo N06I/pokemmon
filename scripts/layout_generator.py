@@ -69,7 +69,7 @@ def generate_layout(area, sprite_patterns):
         json.dump(layouts, f, indent=2)
 
 
-def generate_all_layouts():
+def generate_all_layouts(gend_areas):
     sprite_patterns = {}
     path = "../poke_assets/search/"
     for pwd, dirs, files in os.walk(path):
@@ -80,8 +80,10 @@ def generate_all_layouts():
     for pwd, dirs, files in os.walk("../poke_assets/fireRed_leafGreen/backgrounds/"):
         for file in files:
             generate_layout(file, sprite_patterns)
+            gend_areas.append(file)
     e_time = time.time()
     print(f"Total full game sprite recognition script run time: {e_time - s_time} seconds\n")
 
-
-generate_all_layouts()
+generated_areas = []
+generate_all_layouts(generated_areas)
+print(f"Generated areas: {generated_areas}")
