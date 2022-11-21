@@ -57,6 +57,7 @@ class Server:
                 except _pickle.UnpicklingError:
                     connected = False
                     print("picklerror")
+                    break
                 # print(f"{time.perf_counter()}: {msg}")
 
                 if type(msg) is tuple:  # msg is ((pos, ition), "state"); requests area frame update

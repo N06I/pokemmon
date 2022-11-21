@@ -70,7 +70,7 @@ class Area:
             img = pygame.image.load(f"../poke_assets/search/{sprite_type}").convert_alpha()
             img.set_colorkey(16777215)
             singletile = False
-            fullh = False
+            hb_percent = 0.5
             if sprite_type.startswith("tile"):  # for things like slowing ground and shit
                 groups = [self.visible_grp, self.tile_grp]
             elif sprite_type.startswith("d_"):  # for buildings with doors, doors will prob be their own object
@@ -82,12 +82,12 @@ class Area:
                 singletile = True
             elif sprite_type.startswith("full"):
                 groups = [self.visible_grp, self.collide_grp]
-                fullh = True
+                hb_percent = 1
             # elif sprite_type.startswith("tree"):
             else:           # for sprites with other hitbox shapes
                 groups = [self.visible_grp, self.collide_grp]
             for sprite_pos in positions:
-                Prop(groups, sprite_pos, img, singletile, fullh)
+                Prop(groups, sprite_pos, img, singletile, hb_percent)
 
     def update(self, dt):
         self.updated = pygame.time.get_ticks()

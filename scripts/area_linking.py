@@ -3,6 +3,20 @@ import os
 
 
 # UNUSED, same with exits.pkl
+# UNUSED, same with exits.pkl
+# UNUSED, same with exits.pkl
+# UNUSED, same with exits.pkl
+# UNUSED, same with exits.pkl
+# UNUSED, same with exits.pkl
+# UNUSED, same with exits.pkl
+# UNUSED, same with exits.pkl
+# UNUSED, same with exits.pkl
+# UNUSED, same with exits.pkl
+# UNUSED, same with exits.pkl
+# UNUSED, same with exits.pkl
+# UNUSED, same with exits.pkl
+# UNUSED, same with exits.pkl
+
 
 def add_missing():
     with open("../gamedata/exits.pkl", "rb") as f:

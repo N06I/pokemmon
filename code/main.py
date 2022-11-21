@@ -9,6 +9,7 @@ from chat import Chat
 
 base_reso = (320, 180)
 reso = (640, 360)
+reso = (1280, 720)
 
 # data stored in server, received once when game launches
 area_name = "area1"
@@ -35,7 +36,8 @@ class Game:
         self.gamestate = load_gamestate(self.pid)   # loads stored tuple: ("areaname", (pos, ition))
 
         self.world = World(self, self.gamestate, self.client, self.pid, self.base_display)
-        self.chat = Chat(self, self.base_display)
+        self.chat = Chat(self)
+        self.chat.send("Welcome back", "sys")
         self.chatting = False
 
     def run(self):
@@ -55,15 +57,15 @@ class Game:
                     # chat toggle
                     if event.key == pygame.K_RETURN:
                         if self.chatting:
-                            self.chat.send()
+                            self.chat.send(self.chat.in_text)
                         self.chatting = not self.chatting
+                        self.chat.set_colors()
 
             self.base_display.fill("#191919")
 
             self.world.run(dt)
-            if self.chatting:
-                self.chat.update(self.event_loop)
             self.screen.blit(pygame.transform.scale(self.base_display, reso), (0, 0))
+            self.chat.update(self.event_loop, dt)
             pygame.display.update()
             self.clock.tick(60)
 
