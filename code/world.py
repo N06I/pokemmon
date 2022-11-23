@@ -58,7 +58,7 @@ class World:
         while True:
             if self.end:
                 break
-            time.sleep(0.0025)   # need to sleep to not overwhelm OS with crazy amounts of unnecessary update requests
+            time.sleep(0.005)   # need to sleep to not overwhelm OS with crazy amounts of unnecessary update requests
 
             # request instance update and set flat so area update method knows to grab the updated data
             self.area.player_dict_simple = self.client.instance_update(self.area.character)

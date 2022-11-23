@@ -42,7 +42,7 @@ class Server:
     def handle_client(self, conn, addr):  # 1 threaded handle_client method will run per client connected to server
         print(f"[NEW CONNECTION] {addr} connected.")
         pid = self.player_cnt + 1
-        on_client_logs = []
+        on_client_logs = self.msg_logs.copy()
 
         connected = True
         while connected:
@@ -91,9 +91,10 @@ class Server:
                             descr = "DC"
                         if msg == "chat":
                             diff = []
-                            if len(on_client_logs) > 0:
-                                for messg in self.msg_logs:
-                                    if messg not in on_client_logs and messg.time > on_client_logs[-1].time:
+                            for messg in self.msg_logs:
+                                if messg not in on_client_logs:
+                                    on_client_logs.append(messg)
+                                    if messg.time >= on_client_logs[-1].time:
                                         diff.append(messg)
                             self.send(conn, diff)
                             descr = "CHAT_UPDATE"
@@ -110,8 +111,9 @@ class Server:
                 else:   # chat message
                     self.msg_logs.append(msg)
                     on_client_logs.append(msg)
-            msg = "Not received"
-            # conn.send("Msg received".encode(self.FORMAT))
+                    if len(self.msg_logs) > 100:
+                        self.msg_logs.pop(0)
+                        on_client_logs.pop(0)
         del self.loaded_players[self.current_areas[pid]][pid]
         conn.close()
 
