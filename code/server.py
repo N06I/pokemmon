@@ -34,6 +34,7 @@ class Server:
         #         3: PlayerZip()}
         # }
         self.current_areas = []
+        self.last_message_global = None
 
         print("[STARTING] server is starting...")
         self.start()
@@ -41,6 +42,7 @@ class Server:
     def handle_client(self, conn, addr):  # 1 threaded handle_client method will run per client connected to server
         print(f"[NEW CONNECTION] {addr} connected.")
         pid = self.player_cnt + 1
+        last_message_thread = None
 
         connected = True
         while connected:
@@ -49,13 +51,13 @@ class Server:
             msg_length = conn.recv(self.HEADER).decode(self.FORMAT)  # header
             if msg_length:  # necessary check; because when a client connects it sends an "empty" (NoneType) message
                 msg_length = int(msg_length)
+                print(f"Header: {msg_length}")
                 try:
                     peckel = conn.recv(msg_length)
-                    print(peckel)
+                    print(f"Pickle: {peckel}")
                     msg = pickle.loads(peckel)  # actual message
-                    print(msg)
+                    print(f"Content: {msg}")
                 except _pickle.UnpicklingError:
-                    connected = False
                     print("picklerror")
                     break
                 # print(f"{time.perf_counter()}: {msg}")
@@ -87,7 +89,11 @@ class Server:
                             print("discomesg")
                             connected = False
                             descr = "DC"
-                        else:  # if it's a string and not the DC string, it's an area change
+                        if msg == "chat":
+                            if last_message_thread != self.last_message_global:
+                                last_message_thread = self.last_message_global
+                                self.send(conn, self.last_message_global)
+                        else:  # it's an area change
                             old_area = self.current_areas[pid]
                             # pops the player data from his old area and adds it to the new
                             if msg not in self.loaded_players:  # msg is the new area
@@ -97,6 +103,9 @@ class Server:
                             self.send(conn, True)
                             descr = "CHANGED_AREA"
                     print(f"[{addr}] requested [{descr}]: {msg} ")
+                else:   # chat message
+                    self.last_message_global = msg
+                    last_message_thread = msg
             msg = "Not received"
             # conn.send("Msg received".encode(self.FORMAT))
         del self.loaded_players[self.current_areas[pid]][pid]
@@ -121,6 +130,5 @@ class Server:
             thread = threading.Thread(target=self.handle_client, args=(conn, addr))
             thread.start()
             print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")  # print º current active connections
-
 
 server = Server()

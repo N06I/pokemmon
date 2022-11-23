@@ -27,7 +27,7 @@ class Client:
         self.client.send(send_len)
         self.client.send(message)
 
-    def request(self, msg):     # requests data by msg string
+    def request(self, msg):     # requests data by sending msg
         # print("Message:", msg)
         self.send(msg)      # first sends msg string
 
@@ -43,6 +43,9 @@ class Client:
                 if type(reply) is not dict: print(f"[{self.ADDR}] {reply}")
                 # conn.send("Msg received".encode(self.FORMAT))
                 return reply
+
+    def chat_update(self):
+        return self.request("chat")
 
     def instance_update(self, player):  # could pass the 3 attributes as parameters if it's faster
         return self.request((player.position, player.state))

@@ -1,6 +1,5 @@
-import time
-
 import pygame
+import datetime
 
 from command_line import CommandLine
 
@@ -12,7 +11,7 @@ class Chat:
                       "g": [255, 159, 28],
                       "w": [46, 196, 182],
                       "sys": [231, 29, 54]}    # all, local, party, guild, whisper, system
-    chan_names = {"a": "Everyone", "l": "Here", "p": "Party", "g": "Guild", "w": "Private", "sys": "System"}
+    chan_names = {"a": "All", "l": "Here", "p": "Party", "g": "Guild", "w": "Private", "sys": "System"}
 
     def __init__(self, game):
         # tech setup
@@ -50,6 +49,11 @@ class Chat:
         self.held_keys = {}
         self.letter = None
         self.channel = "l"
+        self.new_message = False
+        self.last_sent = None
+        self.last_received = None
+        self.must_update = False
+        self.receive(Message("Welcome back!", "sys", -1))
 
     def text_input(self, event_loop):
         tick = pygame.time.get_ticks()
@@ -115,9 +119,15 @@ class Chat:
             if text.startswith("/"):
                 self.command_line.execute(text[1:])
             else:
-                self.box_msgs.append(Message(text, channel, self.game.pid))
+                msg = Message(text, channel, self.game.pid)
+                self.box_msgs.append(msg)
+                self.last_sent = msg
+                self.new_message = True
             self.in_text = ""
             self.cursor = 0
+
+    def receive(self, message):
+        self.box_msgs.append(message)
 
     def channel_switch(self, channel):
         self.channel = channel
@@ -137,7 +147,7 @@ class Chat:
         x = 0
         y = 0
         words = msg.text.split()
-        words.insert(0, f"[{msg.time}]({self.chan_names[msg.channel]}){msg.sender}:")
+        words.insert(0, f"[{msg.time.hour}:{msg.time.minute}]({self.chan_names[msg.channel]}){msg.sender}:")
         for word in words:
             w_surf = self.font.render(" " + word, True, self.channel_colors[msg.channel])
             word_width = w_surf.get_width()
@@ -158,6 +168,11 @@ class Chat:
 
     def update(self, event_loop, dt):
         tick = pygame.time.get_ticks()
+        now = datetime.datetime.now()
+
+        if self.must_update:
+            self.receive(self.last_received)
+            self.must_update = False
 
         if self.game.chatting:
             self.text_input(event_loop)
@@ -171,7 +186,7 @@ class Chat:
             pygame.draw.rect(self.display, self.inputline_color, self.inputline_rect, 1)
             pygame.draw.rect(self.display, self.chatbox_color, self.chatbox_rect, 1)
 
-        if self.game.chatting or tick - self.box_msgs[-1].time < 3000:
+        if self.game.chatting or (now - self.box_msgs[-1].time).total_seconds() < 4:
             # make and blit chat surface
             self.box_chat_surf = pygame.Surface(self.chatbox_rect.size, pygame.SRCALPHA)
             self.box_chat_surf.fill(self.chatbox_color)
@@ -180,7 +195,10 @@ class Chat:
 
             # make text input surface
             self.inputline_surf.fill(self.inputline_color)
-            self.in_text_surf = self.font.render(self.in_text, True, self.channel_colors[self.channel])
+            input_color = self.channel_colors[self.channel]
+            if self.in_text.startswith("/") and len(self.in_text.split()[0]) > 1 and self.in_text.split()[0][1:] in self.channel_colors:
+                input_color = self.channel_colors[self.in_text.split()[0][1:]]
+            self.in_text_surf = self.font.render(self.in_text, True, input_color)
             # fix inputline rect based on message length
             right = self.in_text_rect.right
             self.in_text_rect.w = max(self.in_text_surf.get_width(), self.inputline_rect.w)
@@ -196,4 +214,4 @@ class Message:
         self.text = text
         self.channel = channel
         self.sender = sender
-        self.time = pygame.time.get_ticks()
+        self.time = datetime.datetime.now()

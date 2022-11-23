@@ -58,12 +58,25 @@ class World:
         while True:
             if self.end:
                 break
-            time.sleep(0.005)   # need to sleep to not overwhelm OS with crazy amounts of unnecessary update requests
+            time.sleep(0.0025)   # need to sleep to not overwhelm OS with crazy amounts of unnecessary update requests
+
+            # request instance update and set flat so area update method knows to grab the updated data
             self.area.player_dict_simple = self.client.instance_update(self.area.character)
             self.area.must_update = True
+
+            # if area has changed, update the area on server side
             if self.new_area:
                 self.client.update_server_area(self.area_name)
                 self.new_area = False
+
+            # if player has sent new_message, send it to the server and reset flag
+            if self.game.chat.new_message:
+                self.client.send(self.game.chat.last_sent)
+                self.game.chat.new_message = False
+
+            # request chat update and set flag so chat knows to receive it
+            self.game.chat.last_received = self.client.chat_update()
+            self.game.chat.must_update = True
 
     def run(self, dt):
         self.area.update(dt)
