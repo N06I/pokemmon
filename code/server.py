@@ -34,7 +34,7 @@ class Server:
         #         3: PlayerZip()}
         # }
         self.current_areas = []
-        self.last_message_global = None
+        self.msg_logs = []
 
         print("[STARTING] server is starting...")
         self.start()
@@ -42,7 +42,7 @@ class Server:
     def handle_client(self, conn, addr):  # 1 threaded handle_client method will run per client connected to server
         print(f"[NEW CONNECTION] {addr} connected.")
         pid = self.player_cnt + 1
-        last_message_thread = None
+        on_client_logs = []
 
         connected = True
         while connected:
@@ -90,9 +90,13 @@ class Server:
                             connected = False
                             descr = "DC"
                         if msg == "chat":
-                            if last_message_thread != self.last_message_global:
-                                last_message_thread = self.last_message_global
-                                self.send(conn, self.last_message_global)
+                            diff = []
+                            if len(on_client_logs) > 0:
+                                for messg in self.msg_logs:
+                                    if messg not in on_client_logs and messg.time > on_client_logs[-1].time:
+                                        diff.append(messg)
+                            self.send(conn, diff)
+                            descr = "CHAT_UPDATE"
                         else:  # it's an area change
                             old_area = self.current_areas[pid]
                             # pops the player data from his old area and adds it to the new
@@ -104,8 +108,8 @@ class Server:
                             descr = "CHANGED_AREA"
                     print(f"[{addr}] requested [{descr}]: {msg} ")
                 else:   # chat message
-                    self.last_message_global = msg
-                    last_message_thread = msg
+                    self.msg_logs.append(msg)
+                    on_client_logs.append(msg)
             msg = "Not received"
             # conn.send("Msg received".encode(self.FORMAT))
         del self.loaded_players[self.current_areas[pid]][pid]

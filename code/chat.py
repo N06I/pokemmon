@@ -51,7 +51,7 @@ class Chat:
         self.channel = "l"
         self.new_message = False
         self.last_sent = None
-        self.last_received = None
+        self.new_received = []
         self.must_update = False
         self.receive(Message("Welcome back!", "sys", -1))
 
@@ -147,7 +147,7 @@ class Chat:
         x = 0
         y = 0
         words = msg.text.split()
-        words.insert(0, f"[{msg.time.hour}:{msg.time.minute}]({self.chan_names[msg.channel]}){msg.sender}:")
+        words.insert(0, f"[{msg.time.hour:02d}:{msg.time.minute:02d}]({self.chan_names[msg.channel]}){msg.sender}:")
         for word in words:
             w_surf = self.font.render(" " + word, True, self.channel_colors[msg.channel])
             word_width = w_surf.get_width()
@@ -171,7 +171,8 @@ class Chat:
         now = datetime.datetime.now()
 
         if self.must_update:
-            self.receive(self.last_received)
+            for msg in self.new_received:
+                self.receive(msg)
             self.must_update = False
 
         if self.game.chatting:

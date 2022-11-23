@@ -55,7 +55,7 @@ class Character(Entity):
 class OtherPlayer(Character):
     def __init__(self, position, groups, atkables, collidables, tiles):
         self.image = pygame.Surface((0, 0))
-        super().__init__(position, groups, atkables, collidables, tiles)
+        super().__init__(None, position, groups, atkables, collidables, tiles)
 
     def update(self, dt):
         self.cool_down(dt)
