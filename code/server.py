@@ -22,7 +22,7 @@ class Server:
         self.player_cnt = -1
         self.players = {}
 
-        self.loaded_players = {"bill_house": {}}  # players loaded in each area, by playerId
+        self.loaded_players = {"bill_house": {}}  # players loaded in each area, by playerId; areas remain when empty
         #     "bill_house": {        # example data
         #         2: PlayerZip(),    # PlayerZip is deprecated; now a tuple: (player.position, player.state)
         #         0: PlayerZip(),
@@ -33,8 +33,8 @@ class Server:
         #     "celadon_mall_roof": {
         #         3: PlayerZip()}
         # }
-        self.current_areas = []
-        self.msg_logs = []
+        self.current_areas = []     # data remains loaded when player is offline, so client can retreive last session
+        self.msg_mail = {}
 
         print("[STARTING] server is starting...")
         self.start()
@@ -42,7 +42,7 @@ class Server:
     def handle_client(self, conn, addr):  # 1 threaded handle_client method will run per client connected to server
         print(f"[NEW CONNECTION] {addr} connected.")
         pid = self.player_cnt + 1
-        on_client_logs = self.msg_logs.copy()
+        self.msg_mail[pid] = []
 
         connected = True
         while connected:
@@ -51,12 +51,9 @@ class Server:
             msg_length = conn.recv(self.HEADER).decode(self.FORMAT)  # header
             if msg_length:  # necessary check; because when a client connects it sends an "empty" (NoneType) message
                 msg_length = int(msg_length)
-                print(f"Header: {msg_length}")
                 try:
                     peckel = conn.recv(msg_length)
-                    print(f"Pickle: {peckel}")
                     msg = pickle.loads(peckel)  # actual message
-                    print(f"Content: {msg}")
                 except _pickle.UnpicklingError:
                     print("picklerror")
                     break
@@ -66,7 +63,6 @@ class Server:
                     area = self.current_areas[pid]  # gets player's data from pid in method execution memory
                     self.loaded_players[area][pid] = msg  # stores the received player's current data internally
                     self.send(conn, self.loaded_players[area])  # replies with the current area's players' data
-                    print("Relevant area data sent: ", time.perf_counter())
 
                 elif type(msg) is str:  # sending ints as string so need to check
                     try:
@@ -90,13 +86,10 @@ class Server:
                             connected = False
                             descr = "DC"
                         if msg == "chat":
-                            diff = []
-                            for messg in self.msg_logs:
-                                if messg not in on_client_logs:
-                                    on_client_logs.append(messg)
-                                    if messg.time >= on_client_logs[-1].time:
-                                        diff.append(messg)
-                            self.send(conn, diff)
+                            for mesg in self.msg_mail[pid]:
+                                print(mesg.text)
+                            self.send(conn, self.msg_mail[pid])
+                            self.msg_mail[pid] = []
                             descr = "CHAT_UPDATE"
                         else:  # it's an area change
                             old_area = self.current_areas[pid]
@@ -107,14 +100,24 @@ class Server:
                             self.current_areas[pid] = msg
                             self.send(conn, True)
                             descr = "CHANGED_AREA"
-                    print(f"[{addr}] requested [{descr}]: {msg} ")
+                    # print(f"[{addr}] requested [{descr}]: {msg} ")
                 else:   # chat message
-                    self.msg_logs.append(msg)
-                    on_client_logs.append(msg)
-                    if len(self.msg_logs) > 100:
-                        self.msg_logs.pop(0)
-                        on_client_logs.pop(0)
+                    if msg.channel == "l":
+                        area = self.current_areas[pid]
+                        for playerid in self.msg_mail:
+                            if self.current_areas[playerid]:
+                                self.msg_mail[playerid].append(msg)
+                    elif type(msg.channel) == int:
+                        self.msg_mail[msg.channel].append(msg)
+                    else:   # for now
+                        for mail in self.msg_mail.values():
+                            mail.append(msg)
+
         del self.loaded_players[self.current_areas[pid]][pid]
+        del self.msg_mail[pid]
+        # for pidd, msgs in self.msg_mail.items():
+        #     if pid in pids:
+        #         self.msg_mail[mesg].pop(pid)
         conn.close()
 
     def send(self, conn, msg):
@@ -136,5 +139,6 @@ class Server:
             thread = threading.Thread(target=self.handle_client, args=(conn, addr))
             thread.start()
             print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")  # print º current active connections
+
 
 server = Server()

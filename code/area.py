@@ -1,6 +1,6 @@
 import pygame
 
-from cameras import YSortCam, YSortCenterCam
+from cameras import Camera
 from character import Character, OtherPlayer
 from raw import areaExits
 from file_management import get_layout
@@ -32,7 +32,7 @@ class Area:
         self.char_grp = pygame.sprite.GroupSingle()
         self.character = Character(self.game, areadata[1], [self.char_grp],
                                    self.atkable_grp, self.collide_grp, self.tile_grp)
-        self.visible_grp = YSortCenterCam(self.character, self.background, self.base_display)
+        self.visible_grp = Camera(self.character, self.background, self.base_display)
         self.character.add(self.visible_grp)
         self.other_players = {self.pid: self.character}
         self.player_dict_simple = {}
