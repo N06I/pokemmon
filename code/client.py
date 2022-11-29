@@ -1,5 +1,6 @@
 import socket
 import pickle
+from chat import Message
 
 
 class Client:
@@ -9,7 +10,7 @@ class Client:
         self.FORMAT = "utf-8"
         self.DISCONNECT_MESSAGE = "!DISCONNECT"
         self.SERVER = socket.gethostbyname(socket.gethostname())  # replace for actual server's ip unless self-hosting
-        # self.SERVER = "192.168.178.46"
+        # self.SERVER = "192.168.0.14"
         self.ADDR = (self.SERVER, self.PORT)
 
         self.client = socket.socket(socket.AF_INET, socket.TCP_NODELAY)
@@ -39,8 +40,9 @@ class Client:
             if msg_length:  # necessary check; because when a client connects it sends an "empty" (NoneType) message
                 msg_length = int(msg_length)
                 reply = pickle.loads(self.client.recv(msg_length))  # actual message
-
-                if type(reply) is not dict: print(f"[{self.ADDR}] {reply}")
+                if msg == "chat" and type(reply) is list:
+                    for mesg in reply:
+                        print(mesg.text)
                 # conn.send("Msg received".encode(self.FORMAT))
                 return reply
 

@@ -9,7 +9,7 @@ from chat import Chat
 
 base_reso = (320, 180)
 reso = (640, 360)
-# reso = (1280, 720)
+reso = (1280, 720)
 
 # data stored in server, received once when game launches
 area_name = "area1"
@@ -35,9 +35,9 @@ class Game:
         self.gamestate = make_game(self.pid)    # returns true
         self.gamestate = load_gamestate(self.pid)   # loads stored tuple: ("areaname", (pos, ition))
 
-        self.world = World(self, self.gamestate, self.client, self.pid, self.base_display)
         self.chat = Chat(self)
         self.chatting = False
+        self.world = World(self, self.gamestate, self.client, self.pid, self.base_display)
 
     def run(self):
         prev_time = time.time()

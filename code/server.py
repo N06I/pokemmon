@@ -11,7 +11,7 @@ class Server:
         self.HEADER = 16
         self.PORT = 5050
         self.SERVER = socket.gethostbyname(socket.gethostname())  # gets host's IP
-        # self.SERVER = "192.168.178.46"
+        # self.SERVER = "192.168.0.14"
         print(f"Hosting at [{self.SERVER}]")
         self.ADDR = (self.SERVER, self.PORT)
         self.DISCONNECT_MESSAGE = "!DISCONNECT"
@@ -105,13 +105,14 @@ class Server:
                     if msg.channel == "l":
                         area = self.current_areas[pid]
                         for playerid in self.msg_mail:
-                            if self.current_areas[playerid]:
+                            if self.current_areas[playerid] == area and playerid != pid:
                                 self.msg_mail[playerid].append(msg)
                     elif type(msg.channel) == int:
                         self.msg_mail[msg.channel].append(msg)
                     else:   # for now
-                        for mail in self.msg_mail.values():
-                            mail.append(msg)
+                        for playerid, mail in self.msg_mail.items():
+                            if playerid != pid:
+                                mail.append(msg)
 
         del self.loaded_players[self.current_areas[pid]][pid]
         del self.msg_mail[pid]
