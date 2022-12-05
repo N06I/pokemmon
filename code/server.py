@@ -33,7 +33,7 @@ class Server:
         #     "celadon_mall_roof": {
         #         3: PlayerZip()}
         # }
-        self.current_areas = []     # data remains loaded when player is offline, so client can retreive last session
+        self.current_areas = []     # data remains loaded when player is offline, so client can retrieve last session
         self.msg_mail = {}
 
         print("[STARTING] server is starting...")
@@ -105,13 +105,14 @@ class Server:
                     if msg.channel == "l":
                         area = self.current_areas[pid]
                         for playerid in self.msg_mail:
-                            if self.current_areas[playerid]:
+                            if self.current_areas[playerid] == area and playerid != pid:
                                 self.msg_mail[playerid].append(msg)
                     elif type(msg.channel) == int:
                         self.msg_mail[msg.channel].append(msg)
                     else:   # for now
-                        for mail in self.msg_mail.values():
-                            mail.append(msg)
+                        for playerid, mail in self.msg_mail.items():
+                            if playerid != pid:
+                                mail.append(msg)
 
         del self.loaded_players[self.current_areas[pid]][pid]
         del self.msg_mail[pid]

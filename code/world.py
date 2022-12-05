@@ -5,21 +5,20 @@ import threading
 
 from area import Area
 from raw import areaExits, exitLinks
-from character import OtherPlayer
 
 
 class World:
-    def __init__(self, game, areadata, client, pid, base_display):   # just send a player data object instead of playerpos
+    def __init__(self, game, areadata, client, pid, base_display):
         self.game = game
         self.client = client
         self.pid = pid
         self.base_display = base_display
 
         # areas
-        self.area = None               # current area
+        self.area = None               # current area object
         self.area_name = areadata[0]      # its name
         self.new_area = False
-        self.loaded_areas = {}  # {"area1": areaObject} | made a dict to access area names, could be an object list
+        self.loaded_areas = {}  # {"area1": areaObject} | currently useless bc areas are being loaded as new (for now)
         self.load_area(areadata)
 
         self.end = False
@@ -31,8 +30,19 @@ class World:
         self.area_name = areadata[0]
         self.loaded_areas[self.area_name] = self.area   # currently useless bc server handles area loading
         self.new_area = True
-        # self.client.update_server_area(self.area_name)
         print(areaExits)
+
+        # replace method with this when background loaded areas (client) are implemented
+        # if areadata[0] in self.loaded_areas:
+        #     self.set_area(self.loaded_areas[areadata[0]], areadata)
+        # else:
+        #     area = Area(self.game, areadata, self.client, self.pid, self.base_display)
+        #     self.set_area(area, areadata)
+
+    def set_area(self, area, areadata):
+        self.area = area
+        self.area_name = areadata[0]
+        self.new_area = True
 
     def check_exits(self):
         char_hbx = self.area.character.hitbox

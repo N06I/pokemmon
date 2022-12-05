@@ -1,17 +1,28 @@
-import datetime
-import time
+import shutil
 
-before = datetime.datetime.now()
+import pygame
+import os
 
-# time.sleep(1)
+# for pwd, dirs, files in os.walk("../poke_assets/spritez"):
+#     for dir in dirs:
+#         print(dir)
+#         for pwwd, drrs, fils in os.walk(f"../poke_assets/spritez/{dir}/filters"):
+#             for file in fils:
+#                 print(f"Copying {file} into {dir} sprites")
+#                 shutil.copy(f"../poke_assets/spritez/{dir}/filters/{file}", f"../poke_assets/search/")
+#     break
+    # print(f"{pwd}, {dirs}, {files}")
 
-now = datetime.datetime.now()
-start = time.time_ns()
-print(f"{now.minute-9:02d}")
-end = time.time_ns()
-print(f"Calc time: {end - start}")
+# for pwd, dirs, files in os.walk("../poke_assets/search"):
+#     for file in files:
+#         print(f'"{file}": [],')
 
-start = time.time_ns()
-print(f"{str(now.minute-9).zfill(2)}")
-end = time.time_ns()
-print(f"Calc time: {end}, {start}")
+
+class A:
+    def __init__(self):
+        self.lol = "lmaokek"
+
+        print(eval("self.lol"))
+
+
+aa = A()

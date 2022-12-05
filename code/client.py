@@ -40,7 +40,7 @@ class Client:
                 msg_length = int(msg_length)
                 reply = pickle.loads(self.client.recv(msg_length))  # actual message
 
-                if type(reply) is not dict: print(f"[{self.ADDR}] {reply}")
+                # if type(reply) is not dict: print(f"[{self.ADDR}] {reply}")
                 # conn.send("Msg received".encode(self.FORMAT))
                 return reply
 

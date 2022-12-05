@@ -23,7 +23,7 @@ class CommandLine:
                 else:
                     pos_str = args[1].strip("()").split(",")
                     try:
-                        pos = (int(pos_str[0]), int(pos_str[1]))
+                        pos = [int(pos_str[0]), int(pos_str[1])]
                     except ValueError:
                         return
                     self.game.world.area.character.teleport(pos)

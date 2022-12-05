@@ -5,20 +5,21 @@ from file_management import get_sprite_assets
 
 
 class Entity(pygame.sprite.Sprite):
-    def __init__(self, position, groups, atkables, collidables, tiles, name="male_mc"):
+    def __init__(self, position, groups, collidables, tiles, doors, background, name="male_mc"):
         super().__init__(groups)
         # positional info
-        self.position = position
+        self.position = pygame.Vector2(position)
         self.current_tile = None
 
         # general setup
-        self.surf = pygame.Surface((10, 10))
+        self.surf = pygame.Surface((16, 16))
         self.rect = self.surf.get_rect(topleft=(0, 0))  # ????
         self.hitbox = pygame.rect.Rect(self.rect.left, self.rect.top + self.rect.height / 3, self.rect.width,
                                        self.rect.height / 4)
-        self.atkableSprites = atkables
         self.collidableSprites = collidables
         self.tileSprites = tiles
+        self.doorSprites = doors
+        self.bg_rect = background
 
         # character states
         self.buffs = {"movespeed": 1}
@@ -41,7 +42,7 @@ class Entity(pygame.sprite.Sprite):
 
         # combat
         self.cooldowns = {}
-        self.stats = {"movespeed": 160, "action_speed": 1}  # good ms amt = 140 ~ 150
+        self.stats = {"movespeed": 160, "action_speed": 1}  # good ms amt = 150 ~ 160
         self.weight = 50
 
     @property
@@ -82,22 +83,31 @@ class Entity(pygame.sprite.Sprite):
 
         # decelerate based on self's weight and terrain friction
         finalV -= ((self.current_tile.coef * self.weight) if drag_tile else self.weight * 2) * finalV.normalize() if finalV.magnitude() != 0 else pygame.Vector2()
+        finalV *= dt
 
-        # finally apply movement with delta time
-        self.position += finalV * dt
+        # finally apply movement, axis by axis to allow single axis movement during collisions
+        # horizontal
+        self.position[0] += finalV[0]
         self.rect.midbottom = self.position
         self.hitbox.midbottom = self.position
+        if self.colliding() or not self.hitbox.colliderect(self.bg_rect):
+            self.position[0] -= finalV[0]
+            self.rect.midbottom = self.position
+            self.hitbox.midbottom = self.position
+        # vertical
+        self.position[1] += finalV[1]
+        self.rect.midbottom = self.position
+        self.hitbox.midbottom = self.position
+        if self.colliding() or not self.hitbox.colliderect(self.bg_rect):
+            self.position[1] -= finalV[1]
+            self.rect.midbottom = self.position
+            self.hitbox.midbottom = self.position
 
+    def colliding(self):
         for collidable in self.collidableSprites:
             if self.hitbox.colliderect(collidable.hitbox):
-                # if (self.hitbox.top - collidable.hitbox.top < 2) or (self.hitbox.bottom - collidable.hitbox.bottom < 2):
-                #     self.position[1] -= finalV.y * dt
-                # if (self.hitbox.left - collidable.hitbox.left < 2) or (self.hitbox.right - collidable.hitbox.right < 2):
-                #     self.position[0] -= finalV.x * dt
-                self.position -= finalV * dt
-                self.rect.midbottom = self.position
-                self.hitbox.midbottom = self.position
-                break
+                return True
+        return False
 
     def animate(self, dt):
         if self.anim_idx >= self.anim_len:

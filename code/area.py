@@ -1,10 +1,11 @@
 import pygame
 
 from cameras import Camera
-from character import Character, OtherPlayer
+from entity import Entity
+from character import Character
 from raw import areaExits
 from file_management import get_layout
-from layout_sprites import *
+from layout_sprites import GameObj
 
 
 class Area:
@@ -24,17 +25,19 @@ class Area:
             self.exits = areaExits[self.area_name]
         self.background = pygame.image.load(
             f"../poke_assets/fireRed_leafGreen/backgrounds/{self.area_name}.png").convert_alpha()
+        self.bg_rect = self.background.get_rect(topleft=(0, 0))
 
         # sprite setup
-        self.atkable_grp = pygame.sprite.Group()
         self.collide_grp = pygame.sprite.Group()
         self.tile_grp = pygame.sprite.Group()
+        self.door_grp = pygame.sprite.Group()
         self.char_grp = pygame.sprite.GroupSingle()
         self.character = Character(self.game, areadata[1], [self.char_grp],
-                                   self.atkable_grp, self.collide_grp, self.tile_grp)
+                                   self.collide_grp, self.tile_grp, self.door_grp, self.bg_rect)
         self.visible_grp = Camera(self.character, self.background, self.base_display)
         self.character.add(self.visible_grp)
         self.other_players = {self.pid: self.character}
+        self.other_players = {}
         self.player_dict_simple = {}
 
         # layout sprites
@@ -43,18 +46,20 @@ class Area:
     def check_update(self):  # runs every tick (NOT THREADED); updates area if must_update was toggled by async_update()
         if self.must_update:
             for pid, playerdata in self.player_dict_simple.items():
-                if pid not in self.other_players:
+                if pid not in self.other_players and pid != self.pid:
                     print(f"Player {pid} created at {playerdata[0]}.")
-                    self.other_players[pid] = OtherPlayer(playerdata[0],
-                                                          [self.visible_grp],
-                                                          self.atkable_grp, self.collide_grp,
-                                                          self.tile_grp)
-            for pid, playerdata in self.player_dict_simple.items():
-                if pid in self.player_dict_simple.keys() and pid != self.pid and pid in self.other_players:
+                    self.other_players[pid] = Entity(playerdata[0], [self.visible_grp, self.collide_grp],
+                                                     self.collide_grp, self.tile_grp, self.door_grp, self.bg_rect)
                     self.other_players[pid].position = playerdata[0]
                     if self.other_players[pid].state != playerdata[1]:
                         self.other_players[pid].state = playerdata[1]
                         self.other_players[pid].anim_idx = 100
+            # for pid, playerdata in self.player_dict_simple.items():
+            #     if pid in self.player_dict_simple.keys() and pid in self.other_players:
+            #         self.other_players[pid].position = playerdata[0]
+            #         if self.other_players[pid].state != playerdata[1]:
+            #             self.other_players[pid].state = playerdata[1]
+            #             self.other_players[pid].anim_idx = 100
             gone = []
             for pid in self.other_players.keys():
                 if pid not in self.player_dict_simple:
@@ -66,33 +71,28 @@ class Area:
             self.must_update = False
 
     def layout_setup(self, layout):
-        for sprite_type, positions in layout.items():
-            img = pygame.image.load(f"../poke_assets/search/{sprite_type}").convert_alpha()
+        for sprite_type, data in layout.items():
+            img = pygame.image.load(f"../poke_assets/sprites/{sprite_type}").convert_alpha()
             img.set_colorkey(16777215)
-            singletile = False
-            hb_percent = 0.5
-            if sprite_type.startswith("tile"):  # for things like slowing ground and shit
+            size = img.get_size()
+            if sprite_type.startswith("tile_"):  # for tile objects
                 groups = [self.visible_grp, self.tile_grp]
-            elif sprite_type.startswith("d_"):  # for buildings with doors, doors will prob be their own object
-                groups = [self.visible_grp, self.collide_grp]
+            elif sprite_type.startswith("coll_"):   # for purely collisional sprites
+                groups = [self.collide_grp]
+                img = None
             elif sprite_type.startswith("v_"):  # for purely visual sprites
                 groups = [self.visible_grp]
-            elif sprite_type.startswith("prop"):  # for 16x16 hitbox sprites
+            elif sprite_type.startswith("door_"):  # for door objects
+                groups = [self.visible_grp, self.collide_grp, self.door_grp]
+            else:
                 groups = [self.visible_grp, self.collide_grp]
-                singletile = True
-            elif sprite_type.startswith("full"):
-                groups = [self.visible_grp, self.collide_grp]
-                hb_percent = 1
-            # elif sprite_type.startswith("tree"):
-            else:           # for sprites with other hitbox shapes
-                groups = [self.visible_grp, self.collide_grp]
-            for sprite_pos in positions:
-                Prop(groups, sprite_pos, img, singletile, hb_percent)
+            for sprite_pos in data["occurs"]:
+                GameObj(groups, sprite_pos, img, size, **data["form"])
 
     def update(self, dt):
         self.updated = pygame.time.get_ticks()
-        self.visible_grp.custom_draw()
         self.visible_grp.update(dt)
+        self.visible_grp.custom_draw()
         self.check_update()
         # self.sync_update()
         # print("Players in area:", self.other_players)

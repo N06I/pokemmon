@@ -1,14 +1,35 @@
 import pygame
 
 
-class Prop(pygame.sprite.Sprite):
-    def __init__(self, groups, position, image=pygame.Surface((8, 8)), singletile=False, hb_size_fraction=0.5):
+class GameObj(pygame.sprite.Sprite):
+    def __init__(self, groups, bottomleft, img, size, **kwargs):
         super().__init__(groups)
-        self.image = image
-        self.rect = self.image.get_rect(bottomleft=position)
-        if singletile:
-            self.hitbox = pygame.Rect(self.rect.left+1, self.rect.bottom - 12, 14, 12)
-        else:
-            hb_height = self.rect.height * hb_size_fraction
-            self.hitbox = pygame.Rect(self.rect.left, self.rect.top + self.rect.height - hb_height,
-                                      self.rect.width, hb_height)
+        self.image = img
+        self.rect = pygame.rect.Rect(bottomleft[0], bottomleft[1] - size[1], size[0], size[1])
+        self.hitbox = self.rect.copy()
+
+        for arg, val in kwargs.items():
+            if arg == "ltrim":
+                if val >= 1:
+                    trim = val
+                else:
+                    trim = val*self.hitbox.w
+                self.hitbox = pygame.Rect(self.hitbox.left + trim, self.hitbox.top, self.hitbox.w - trim, self.hitbox.h)
+            if arg == "rtrim":
+                if val >= 1:
+                    trim = val
+                else:
+                    trim = val * self.hitbox.w
+                self.hitbox = pygame.Rect(self.hitbox.left, self.hitbox.top, self.hitbox.w - trim, self.hitbox.h)
+            if arg == "ttrim":
+                if val >= 1:
+                    trim = val
+                else:
+                    trim = val * self.hitbox.h
+                self.hitbox = pygame.Rect(self.hitbox.left, self.hitbox.top + trim, self.hitbox.w, self.hitbox.h - trim)
+            if arg == "btrim":
+                if val >= 1:
+                    trim = val
+                else:
+                    trim = val * self.hitbox.h
+                self.hitbox = pygame.Rect(self.hitbox.left, self.hitbox.top, self.hitbox.w, self.hitbox.h - trim)
