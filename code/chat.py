@@ -173,6 +173,7 @@ class Chat:
         if self.must_update:
             for msg in self.new_received:
                 self.receive(msg)
+            self.new_received = []
             self.must_update = False
 
         if self.game.chatting:

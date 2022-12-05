@@ -85,7 +85,7 @@ class World:
                 self.game.chat.new_message = False
 
             # request chat update and set flag so chat knows to receive it
-            self.game.chat.new_received = self.client.chat_update()
+            self.game.chat.new_received += self.client.chat_update()
             self.game.chat.must_update = True
 
     def run(self, dt):
