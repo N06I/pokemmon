@@ -1,18 +1,17 @@
 import pygame
 
-from cameras import Camera
+from camera import Camera
 from entity import Entity
 from character import Character
 from raw import areaExits
-from file_management import get_layout
+from file_management import get_layout, get_hitbox, get_hitbox_center
 from layout_sprites import GameObj
 
 
 class Area:
 
-    def __init__(self, game, areadata, client, pid, base_display):
+    def __init__(self, areadata, client, pid, base_display, get_events):
         # tech setup
-        self.game = game
         self.client = client
         self.pid = pid
         self.base_display = base_display
@@ -32,9 +31,9 @@ class Area:
         self.tile_grp = pygame.sprite.Group()
         self.door_grp = pygame.sprite.Group()
         self.char_grp = pygame.sprite.GroupSingle()
-        self.character = Character(self.game, areadata[1], [self.char_grp],
+        self.character = Character(get_events, areadata[1], [self.char_grp],
                                    self.collide_grp, self.tile_grp, self.door_grp, self.bg_rect)
-        self.visible_grp = Camera(self.character, self.background, self.base_display)
+        self.visible_grp = Camera(self.character, self.background, self.base_display, get_events)
         self.character.add(self.visible_grp)
         self.other_players = {self.pid: self.character}
         self.other_players = {}
@@ -71,28 +70,32 @@ class Area:
             self.must_update = False
 
     def layout_setup(self, layout):
-        for sprite_type, data in layout.items():
+        for sprite_type, occurs in layout.items():
             img = pygame.image.load(f"../poke_assets/sprites/{sprite_type}").convert_alpha()
-            img.set_colorkey(16777215)
+            img.set_colorkey(-1)
             size = img.get_size()
+            try:
+                mask, mask_image, mask_center = get_hitbox(sprite_type)
+            except FileNotFoundError:
+                mask = pygame.mask.from_surface(img)
+                mask_image = mask.to_surface()
+                mask_image.set_colorkey(0)
+                mask_center = get_hitbox_center(mask)
             if sprite_type.startswith("tile_"):  # for tile objects
                 groups = [self.visible_grp, self.tile_grp]
             elif sprite_type.startswith("coll_"):   # for purely collisional sprites
                 groups = [self.collide_grp]
-                img = None
             elif sprite_type.startswith("v_"):  # for purely visual sprites
                 groups = [self.visible_grp]
             elif sprite_type.startswith("door_"):  # for door objects
                 groups = [self.visible_grp, self.collide_grp, self.door_grp]
             else:
                 groups = [self.visible_grp, self.collide_grp]
-            for sprite_pos in data["occurs"]:
-                GameObj(groups, sprite_pos, img, size, **data["form"])
+            for sprite_pos in occurs:
+                GameObj(groups, sprite_pos, img, mask, mask_image, mask_center, size)
 
     def update(self, dt):
         self.updated = pygame.time.get_ticks()
         self.visible_grp.update(dt)
         self.visible_grp.custom_draw()
         self.check_update()
-        # self.sync_update()
-        # print("Players in area:", self.other_players)

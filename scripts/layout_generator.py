@@ -2,7 +2,6 @@ import pygame
 import time
 import os
 import json
-from form_definitions import sprite_forms
 
 
 def matching(pattern, against):
@@ -52,17 +51,15 @@ def generate_layout(area, sprite_patterns):
     # working image comparator :D
     for pattern_name in sprite_patterns.keys():
         pattern = sprite_patterns[pattern_name]
-        area_sprites[pattern_name] = {"occurs": []}
+        area_sprites[pattern_name] = []
         for col in range(0, (len(bg) - len(pattern) + 1), 8):
             for compared_area_start in range(0, (len(bg[col]) - len(pattern[0]) + 1), 8):
                 against = bg[col:col + len(pattern), compared_area_start:compared_area_start + len(pattern[0])]
                 if matching(pattern, against):
                     # print(f"Pattern MATCH! at ({col}, {compared_area_start}) for pattern {pattern_name}")
-                    area_sprites[pattern_name]["occurs"].append((col, compared_area_start + len(pattern[0])))
-        if len(area_sprites[pattern_name]["occurs"]) == 0:
+                    area_sprites[pattern_name].append((col, compared_area_start + len(pattern[0])))
+        if len(area_sprites[pattern_name]) == 0:
             del area_sprites[pattern_name]
-        else:
-            area_sprites[pattern_name]["form"] = sprite_forms[pattern_name]
     etime = time.time()
     print(f"{len(area_sprites)} sprites found: {area_sprites}")
     print(f"Total run time for {area}: {etime - stime} seconds\n")

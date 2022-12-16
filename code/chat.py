@@ -13,10 +13,13 @@ class Chat:
                       "sys": [231, 29, 54]}    # all, local, party, guild, whisper, system
     chan_names = {"a": "All", "l": "Here", "p": "Party", "g": "Guild", "w": "Private", "sys": "System"}
 
-    def __init__(self, game):
+    def __init__(self, world, chat_isopen, pid, get_events):
         # tech setup
-        self.game = game
-        self.command_line = CommandLine(game)
+        self.chat_isopen = chat_isopen
+        self.chat_open = False
+        self.player_id = pid
+        self.get_events = get_events
+        self.command_line = CommandLine(self, world)
         self.display = pygame.display.get_surface()
         reso = self.display.get_size()
         self.opacity = 128
@@ -55,14 +58,14 @@ class Chat:
         self.must_update = False
         self.receive(Message("Welcome back!", "sys", -1))
 
-    def text_input(self, event_loop):
+    def text_input(self):
         tick = pygame.time.get_ticks()
         keys = pygame.key.get_pressed()
         for held_key, keydown_data in self.held_keys.items():
             if keys[held_key]:
                 if tick - keydown_data[0] > 400:
                     keydown_data[1]()
-        for event in event_loop.copy():
+        for event in self.get_events():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     continue
@@ -116,10 +119,10 @@ class Chat:
         if channel is None:
             channel = self.channel
         if text != "":
-            if text.startswith("/"):
+            if text.startswith("/") and len(text) > 1:
                 self.command_line.execute(text[1:])
             else:
-                msg = Message(text, channel, self.game.pid)
+                msg = Message(text, channel, self.player_id)
                 self.box_msgs.append(msg)
                 self.last_sent = msg
                 self.new_message = True
@@ -159,25 +162,24 @@ class Chat:
         return msg_surf.subsurface(0, 0, box_surf.get_width(), y + self.fontsize)
 
     def set_colors(self):
-        if self.game.chatting:
-            self.chatbox_color.a = 255
-            self.inputline_color.a = 255
-        else:
+        if self.chat_open:
             self.chatbox_color.a = self.opacity
             self.inputline_color.a = self.opacity
+        else:
+            self.chatbox_color.a = 255
+            self.inputline_color.a = 255
 
-    def update(self, event_loop, dt):
-        tick = pygame.time.get_ticks()
+    def update(self, dt):
         now = datetime.datetime.now()
+        self.chat_open = self.chat_isopen()
 
         if self.must_update:
             for msg in self.new_received:
                 self.receive(msg)
             self.new_received = []
             self.must_update = False
-
-        if self.game.chatting:
-            self.text_input(event_loop)
+        if self.chat_open:
+            self.text_input()
             keys = pygame.key.get_pressed()
             if keys[pygame.K_LCTRL]:
                 if keys[pygame.K_UP] and self.chatbox_scroll < 300:
@@ -188,7 +190,7 @@ class Chat:
             pygame.draw.rect(self.display, self.inputline_color, self.inputline_rect, 1)
             pygame.draw.rect(self.display, self.chatbox_color, self.chatbox_rect, 1)
 
-        if self.game.chatting or (now - self.box_msgs[-1].time).total_seconds() < 4:
+        if self.chat_open or (now - self.box_msgs[-1].time).total_seconds() < 4:
             # make and blit chat surface
             self.box_chat_surf = pygame.Surface(self.chatbox_rect.size, pygame.SRCALPHA)
             self.box_chat_surf.fill(self.chatbox_color)

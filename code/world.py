@@ -26,7 +26,7 @@ class World:
         self.update_thread.start()
 
     def load_area(self, areadata):
-        self.area = Area(self.game, areadata, self.client, self.pid, self.base_display)
+        self.area = Area(areadata, self.client, self.pid, self.base_display, self.game.get_events)
         self.area_name = areadata[0]
         self.loaded_areas[self.area_name] = self.area   # currently useless bc server handles area loading
         self.new_area = True
@@ -45,7 +45,7 @@ class World:
         self.new_area = True
 
     def check_exits(self):
-        char_hbx = self.area.character.hitbox
+        char_hbx = self.area.character.rect
         exitdata = None
         for i, exitrect in enumerate(self.area.exits):
             if char_hbx.colliderect(exitrect):

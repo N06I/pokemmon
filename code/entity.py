@@ -1,7 +1,7 @@
 import math
 
 import pygame, time
-from file_management import get_sprite_assets
+from file_management import get_sprite_assets, get_hitbox
 
 
 class Entity(pygame.sprite.Sprite):
@@ -12,10 +12,14 @@ class Entity(pygame.sprite.Sprite):
         self.current_tile = None
 
         # general setup
+        self.name = name
         self.surf = pygame.Surface((16, 16))
+        self.hitbox, self.hitbox_surf, self.hitbox_center = get_hitbox(f"{name}.png")
         self.rect = self.surf.get_rect(topleft=(0, 0))  # ????
-        self.hitbox = pygame.rect.Rect(self.rect.left, self.rect.top + self.rect.height / 3, self.rect.width,
+        self.rect = pygame.rect.Rect(self.rect.left, self.rect.top + self.rect.height / 3, self.rect.width,
                                        self.rect.height / 4)
+
+        # accessible sprites
         self.collidableSprites = collidables
         self.tileSprites = tiles
         self.doorSprites = doors
@@ -29,7 +33,6 @@ class Entity(pygame.sprite.Sprite):
         self.assets = get_sprite_assets(name)
 
         # animation
-        self.name = name
         self.anim_idx = 1000
         self.anim_len = 0
         self.anim_size = None
@@ -38,7 +41,7 @@ class Entity(pygame.sprite.Sprite):
 
         # physics
         self.inputV = pygame.Vector2()
-        self.listV = [pygame.Vector2()]
+        self.v_list = [pygame.Vector2()]
 
         # combat
         self.cooldowns = {}
@@ -65,13 +68,13 @@ class Entity(pygame.sprite.Sprite):
 
     def move(self, dt):
         # check current frame's external speed vector list, extract total vector, empty list
-        sumV = pygame.Vector2()
-        for vector in self.listV:
-            sumV += vector
-        self.listV = []
+        v_sum = pygame.Vector2()
+        for vector in self.v_list:
+            v_sum += vector
+        self.v_list = []
 
         # apply movespeed
-        finalV = (self.effective_msV * self.inputV) + sumV
+        self.finalV = (self.effective_msV * self.inputV) + v_sum
 
         # check for dragging tiles and apply friction
 
@@ -82,32 +85,56 @@ class Entity(pygame.sprite.Sprite):
                 self.current_tile = tile
 
         # decelerate based on self's weight and terrain friction
-        finalV -= ((self.current_tile.coef * self.weight) if drag_tile else self.weight * 2) * finalV.normalize() if finalV.magnitude() != 0 else pygame.Vector2()
-        finalV *= dt
+        self.finalV -= ((self.current_tile.coef * self.weight) if drag_tile else self.weight * 2) * self.finalV.normalize() if self.finalV.magnitude() != 0 else pygame.Vector2()
+        self.finalV *= dt
 
         # finally apply movement, axis by axis to allow single axis movement during collisions
         # horizontal
-        self.position[0] += finalV[0]
+        self.position[0] += self.finalV[0]
         self.rect.midbottom = self.position
-        self.hitbox.midbottom = self.position
-        if self.colliding() or not self.hitbox.colliderect(self.bg_rect):
-            self.position[0] -= finalV[0]
+        if not self.bg_rect.contains(self.rect):
+            self.position[0] -= self.finalV[0]
             self.rect.midbottom = self.position
-            self.hitbox.midbottom = self.position
+        elif self.collided():
+            self.relocate(0)
         # vertical
-        self.position[1] += finalV[1]
+        self.position[1] += self.finalV[1]
         self.rect.midbottom = self.position
-        self.hitbox.midbottom = self.position
-        if self.colliding() or not self.hitbox.colliderect(self.bg_rect):
-            self.position[1] -= finalV[1]
+        if not self.bg_rect.contains(self.rect):
+            self.position[1] -= self.finalV[1]
             self.rect.midbottom = self.position
-            self.hitbox.midbottom = self.position
+        elif self.collided():
+            self.relocate(1)
 
-    def colliding(self):
+    def collided(self):
         for collidable in self.collidableSprites:
-            if self.hitbox.colliderect(collidable.hitbox):
-                return True
-        return False
+            if self.rect.colliderect(collidable.rect):
+                x = collidable.rect.left - self.rect.left
+                y = collidable.rect.top - self.rect.top
+                if self.hitbox.overlap(collidable.hitbox, (x, y)):
+                    return True
+
+    def relocate(self, axis):
+        if axis == 0:
+            # test sideways collisions
+            self.rect.move_ip(0, -abs(self.finalV[0]))
+            zig_collides = 1 if self.collided() else 0
+            self.rect.move_ip(0, abs(self.finalV[0])*2)
+            zag_collides = -1 if self.collided() else 0
+            # set position based on test
+            self.position += (-self.finalV[0], zig_collides + zag_collides)
+            print(f"Collides BOTTOMTOP: {zig_collides}, {zag_collides}")
+        elif axis == 1:
+            # test sideways collisions
+            self.rect.move_ip(-abs(self.finalV[1]), 0)
+            zig_collides = 1 if self.collided() else 0
+            self.rect.move_ip(abs(self.finalV[1])*2, 0)
+            zag_collides = -1 if self.collided() else 0
+            # set position based on test
+            self.position += (zig_collides + zag_collides, -self.finalV[1])
+            print(f"Collides RIGHTLEFT: {zig_collides}, {zag_collides}")
+        # set rect
+        self.rect.midbottom = self.position
 
     def animate(self, dt):
         if self.anim_idx >= self.anim_len:
@@ -151,7 +178,6 @@ class Entity(pygame.sprite.Sprite):
     def teleport(self, pos):
         self.position = pos
         self.rect.midbottom = self.position
-        self.hitbox.midbottom = self.position
 
     def update(self, dt):
         self.cool_down(dt)
