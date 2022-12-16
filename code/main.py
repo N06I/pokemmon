@@ -39,7 +39,6 @@ class Game:
         self.world = World(self, self.gamestate, self.client, self.pid, self.base_display)
         self.chatting = False
         self.chat = Chat(self.world, self.chat_isopen, self.pid, self.get_events)
-        self.settings = Settings(self.get_events)
 
     def run(self):
         prev_time = time.time()
@@ -67,7 +66,6 @@ class Game:
             self.world.run(dt)
             self.screen.blit(pygame.transform.scale(self.base_display, reso), (0, 0))
             self.chat.update(dt)
-            self.settings.update()
             pygame.display.update()
             self.clock.tick(60)
 
