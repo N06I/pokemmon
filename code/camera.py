@@ -47,11 +47,7 @@ class Camera(pygame.sprite.Group):
             sprite.update(*args, **kwargs)
 
         keys = pygame.key.get_pressed()
-        print("len: ", len(keys))
-        print(pygame.K_F3)
-        print(type(keys))
         if keys[pygame.K_F3]:
-            print("kek")
             for event in self.get_events():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_h:
