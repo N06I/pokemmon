@@ -6,7 +6,6 @@ from world import World
 from client import Client
 from file_management import load_gamestate, make_game
 from chat import Chat
-from settings import Settings
 
 base_reso = (320, 180)
 reso = (640, 360)
