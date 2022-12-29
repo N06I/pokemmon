@@ -39,14 +39,17 @@ def get_layout(area):
 
 def get_hitbox(name):
     # load the hitbox image and set the colorkey for the mask
-    hb_image = pygame.image.load(f"../gamedata/hitbox/{name}")
-    hb_image.set_colorkey(16777215)
+    try:
+        hb_image = pygame.image.load(f"../gamedata/hitbox/{name}").convert_alpha()
+    except FileNotFoundError:
+        hb_image = pygame.image.load(f"../poke_assets/sprites/{name}").convert_alpha()
+    hb_image.set_colorkey(-1)
 
     # create the mask and the mask surface, set mask surf colorkey and transparency
     mask = pygame.mask.from_surface(hb_image)
     mask_surf = mask.to_surface()
     mask_surf.set_alpha(136)
-    mask_surf.set_colorkey((0, 0, 0))
+    mask_surf.set_colorkey(0)
 
     mask_center = get_hitbox_center(mask)
 

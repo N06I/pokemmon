@@ -42,6 +42,7 @@ class Entity(pygame.sprite.Sprite):
         # physics
         self.inputV = pygame.Vector2()
         self.v_list = [pygame.Vector2()]
+        self.friction = 2
 
         # combat
         self.cooldowns = {}
@@ -78,14 +79,15 @@ class Entity(pygame.sprite.Sprite):
 
         # check for dragging tiles and apply friction
 
-        drag_tile = False
-        for tile in self.tileSprites:
-            if self.rect.colliderect(tile.rect):
-                drag_tile = True
-                self.current_tile = tile
+        tile = self.check_tiles()
+        if tile:
+            self.friction = tile.coef
+            self.current_tile = tile
+        else:
+            self.friction = 2
 
         # decelerate based on self's weight and terrain friction
-        self.finalV -= ((self.current_tile.coef * self.weight) if drag_tile else self.weight * 2) * self.finalV.normalize() if self.finalV.magnitude() != 0 else pygame.Vector2()
+        self.finalV -= self.friction * self.weight * self.finalV.normalize() if self.finalV.magnitude() != 0 else pygame.Vector2()
         self.finalV *= dt
 
         # finally apply movement, axis by axis to allow single axis movement during collisions
@@ -95,7 +97,7 @@ class Entity(pygame.sprite.Sprite):
         if not self.bg_rect.contains(self.rect):
             self.position[0] -= self.finalV[0]
             self.rect.midbottom = self.position
-        elif self.collided():
+        elif self.check_collidables():
             self.relocate(0)
         # vertical
         self.position[1] += self.finalV[1]
@@ -103,37 +105,44 @@ class Entity(pygame.sprite.Sprite):
         if not self.bg_rect.contains(self.rect):
             self.position[1] -= self.finalV[1]
             self.rect.midbottom = self.position
-        elif self.collided():
+        elif self.check_collidables():
             self.relocate(1)
 
-    def collided(self):
-        for collidable in self.collidableSprites:
+    def collided(self, group):
+        for collidable in group:
             if self.rect.colliderect(collidable.rect):
                 x = collidable.rect.left - self.rect.left
                 y = collidable.rect.top - self.rect.top
                 if self.hitbox.overlap(collidable.hitbox, (x, y)):
-                    return True
+                    return collidable
+
+    def check_collidables(self):
+        return self.collided(self.collidableSprites)
+
+    def check_tiles(self):
+        return self.collided(self.tileSprites)
 
     def relocate(self, axis):
         if axis == 0:
             # test sideways collisions
             self.rect.move_ip(0, -abs(self.finalV[0]))
-            zig_collides = 1 if self.collided() else 0
+            zig_collides = 1 if self.check_collidables() else 0
             self.rect.move_ip(0, abs(self.finalV[0])*2)
-            zag_collides = -1 if self.collided() else 0
+            zag_collides = -1 if self.check_collidables() else 0
             # set position based on test
             self.position += (-self.finalV[0], zig_collides + zag_collides)
             print(f"Collides BOTTOMTOP: {zig_collides}, {zag_collides}")
         elif axis == 1:
             # test sideways collisions
             self.rect.move_ip(-abs(self.finalV[1]), 0)
-            zig_collides = 1 if self.collided() else 0
+            zig_collides = 1 if self.check_collidables() else 0
             self.rect.move_ip(abs(self.finalV[1])*2, 0)
-            zag_collides = -1 if self.collided() else 0
+            zag_collides = -1 if self.check_collidables() else 0
             # set position based on test
             self.position += (zig_collides + zag_collides, -self.finalV[1])
             print(f"Collides RIGHTLEFT: {zig_collides}, {zag_collides}")
         # set rect
+        print(type(self.position))
         self.rect.midbottom = self.position
 
     def animate(self, dt):
@@ -156,7 +165,7 @@ class Entity(pygame.sprite.Sprite):
                         (math.trunc(self.anim_idx) * self.anim_size[0], 0, self.anim_size[0], self.anim_size[1]))
 
         if "static" not in self.state:
-            if self.state.split("_")[0] == "idle":
+            if "idle" in self.state:
                 self.anim_idx += self.anim_speed * dt
             else:
                 self.anim_idx += self.anim_speed * dt * self.stats["action_speed"]

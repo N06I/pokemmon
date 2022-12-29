@@ -1,3 +1,5 @@
+import pygame
+
 from raw import areaExits
 
 
@@ -24,10 +26,10 @@ class CommandLine:
                 else:
                     pos_str = args[1].strip("()").split(",")
                     try:
-                        pos = [int(pos_str[0]), int(pos_str[1])]
+                        pos = (int(pos_str[0]), int(pos_str[1]))
                     except ValueError:
                         return
-                    self.world.area.character.teleport(pos)
+                    self.world.area.character.teleport(pygame.Vector2(pos))
         elif command in self.chat.chan_names:  # .chat.chan_names
             self.chat.channel_switch(command)
             if len(args) > 1:
