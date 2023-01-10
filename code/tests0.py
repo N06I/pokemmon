@@ -1,34 +1,60 @@
-import pygame
+class Item:
+    def __init__(self, name: str, modifiers: dict):
+        self.name = name
+        self.modifiers = modifiers
+
+    def __str__(self):
+        return f"[{self.name}] " + ", ".join(f"{mod}:{val}" for mod, val in self.modifiers.items())
 
 
-class Entity(pygame.sprite.Sprite):
-    def __init__(self, groups):
-        super().__init__(groups)
-        self.button_down = True
-        self.position = 0
-        self.ms_stat = 10
-        self.action_speed = 1
-        self.items = [Item(2), Item(6)]
-        self.buffs = [Buff(0.1), Buff(-0.5), Buff(0.2), Buff(1)]
+class Entity:
+    def __init__(self, name):
+        self.name = name
+        self.stats = {}
+        self.action_speed = Stat()
+
+    def __setitem__(self, key, value):
+        self.stats[key] = value
+
+    def __delitem__(self, key):
+        del self.stats[key]
+
+    def __getitem__(self, key):
+        return self.stats[key]
+
+    def __str__(self):
+        return f"[{self.name}] " + ", ".join(f"{stat}:{val}" for stat, val in self.stats.items())
+
+
+class Stat:
+    def __init__(self, name=None):
+        self.name = name
+        self._value = 0
+        self._flat = self.StatMultiplier(self.recalc)
+        self._mult = self.StatMultiplier(self.recalc)
 
     @property
-    def move_speed(self):
-        return (self.ms_stat + sum(item.ms for item in self.items)) * sum(buff.factor for buff in self.buffs)
+    def value(self):
+        return self._value
 
-    def move(self):
-        if self.button_down:
-            self.position += self.move_speed * self.action_speed
+    def recalc(self):
+        self._value = self._flat * self._mult
+
+    class StatMultiplier:
+        def __init__(self, recalc, base=1):
+            self.value = base
+            self.recalc = recalc
+
+        def __add__(self, other):
+            self.recalc()
+            return other + self.value
+
+        def __sub__(self, other):
+            self.recalc()
+            return other - self.value
+
+        def __mul__(self, other):
+            return other * self.value
 
 
-class Item:
-    def __init__(self, ms):
-        self.ms = ms
-
-
-class Buff:
-    def __init__(self, factor):
-        self.factor = factor
-
-
-ent = Entity([])
-print(ent.move_speed)
+ent = Entity("homie")
