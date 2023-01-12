@@ -72,6 +72,11 @@ class Area:
 
     def layout_setup(self, layout):
         for sprite_type, occurs in layout.items():
+            if sprite_type.startswith("coll_"):   # for purely collisional sprites
+                groups = [self.collide_grp]
+                for sprite_pos in occurs:
+                    CustomTile(groups, sprite_pos)
+                continue
             img = pygame.image.load(f"../poke_assets/sprites/{sprite_type}").convert_alpha()
             img.set_colorkey(-1)
             size = img.get_size()
@@ -88,9 +93,7 @@ class Area:
                 for sprite_pos in occurs:
                     Ledge(groups, sprite_pos, mask, mask_image, size, directions)
                 continue
-            if sprite_type.startswith("coll_"):   # for purely collisional sprites
-                groups = [self.collide_grp]
-            elif sprite_type.startswith("v_"):  # for purely visual sprites
+            if sprite_type.startswith("v_"):  # for purely visual sprites
                 groups = [self.visible_grp]
             elif sprite_type.startswith("door_"):  # for door objects
                 groups = [self.visible_grp, self.collide_grp, self.door_grp]

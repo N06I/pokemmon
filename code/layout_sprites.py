@@ -13,7 +13,7 @@ class GameObj(pygame.sprite.Sprite):
 
 
 class CustomTile(pygame.sprite.Sprite):
-    def __init__(self, groups, bottomleft, img=None, hitbox=None, hb_surf=None, hb_center=None, size=(16, 16), friction=2):
+    def __init__(self, groups, bottomleft, img=None, hitbox=None, hb_surf=None, hb_center=None, size=(16, 16), friction=0):
         super().__init__(groups)
         self.image = img if img is not None else pygame.Surface(size)
         self.rect = pygame.rect.Rect(bottomleft[0], bottomleft[1] - size[1], size[0], size[1])

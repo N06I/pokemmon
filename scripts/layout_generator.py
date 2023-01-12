@@ -61,7 +61,7 @@ def generate_layout(area, sprite_patterns):
         if len(area_sprites[pattern_name]) == 0:
             del area_sprites[pattern_name]
     etime = time.time()
-    print(f"{len(area_sprites)} sprites found: {area_sprites}")
+    print(f"{len(area_sprites)} sprite types found: {area_sprites}")
     print(f"Total run time for {area}: {etime - stime} seconds\n")
     layouts[area] = area_sprites
     with open("../gamedata/layouts.json", "w") as f:

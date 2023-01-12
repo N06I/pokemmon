@@ -2,6 +2,7 @@ import math
 
 import pygame, time
 from file_management import get_sprite_assets, get_hitbox
+from entity_stats import *
 
 
 class Entity(pygame.sprite.Sprite):
@@ -42,17 +43,13 @@ class Entity(pygame.sprite.Sprite):
         # physics
         self.inputV = pygame.Vector2()
         self.v_list = [pygame.Vector2()]
-        self.friction = 2
 
-        # combat
+        # combat relevant data
         self.cooldowns = {}
-        self.stats = {"movespeed": 160, "action_speed": 1}  # good ms amt = 140 ~ 150
+        self.action_speed = Stat(1)
+        self.stats = {"movespeed": Stat(160, action_speed=self.action_speed)}   # good ms amt = 140 ~ 150
+        self.items = {}
         self.weight = 50
-
-    @property
-    def effective_msV(self):  # movespeed with buff
-        return self.stats["movespeed"] if "movespeed" not in self.buffs else self.stats["movespeed"] + self.buffs[
-            "movespeed"]
 
     def set_action(self, new):
         if new not in self.state:
@@ -75,19 +72,15 @@ class Entity(pygame.sprite.Sprite):
         self.v_list = []
 
         # apply movespeed
-        self.finalV = (self.effective_msV * self.inputV) + v_sum
+        self.finalV = (self.stats["movespeed"].value * self.inputV) + v_sum
 
-        # check for dragging tiles and apply friction
-
-        tile = self.check_tiles()
-        if tile:
-            self.friction = tile.coef
-            self.current_tile = tile
+        # set friction based on terrain
+        if tile := self.check_tiles():
+            friction = tile.coef * self.weight
         else:
-            self.friction = 2
-
+            friction = 2 * self.weight
         # decelerate based on self's weight and terrain friction
-        self.finalV -= self.friction * self.weight * self.finalV.normalize() if self.finalV.magnitude() != 0 else pygame.Vector2()
+        self.finalV -= friction * self.finalV.normalize() if self.finalV.magnitude() != 0 else pygame.Vector2()
         self.finalV *= dt
 
         # finally apply movement, axis by axis to allow single axis movement during collisions
@@ -131,7 +124,6 @@ class Entity(pygame.sprite.Sprite):
             zag_collides = -1 if self.check_collidables() else 0
             # set position based on test
             self.position += (-self.finalV[0], zig_collides + zag_collides)
-            print(f"Collides BOTTOMTOP: {zig_collides}, {zag_collides}")
         elif axis == 1:
             # test sideways collisions
             self.rect.move_ip(-abs(self.finalV[1]), 0)
@@ -140,9 +132,7 @@ class Entity(pygame.sprite.Sprite):
             zag_collides = -1 if self.check_collidables() else 0
             # set position based on test
             self.position += (zig_collides + zag_collides, -self.finalV[1])
-            print(f"Collides RIGHTLEFT: {zig_collides}, {zag_collides}")
         # set rect
-        print(type(self.position))
         self.rect.midbottom = self.position
 
     def animate(self, dt):
@@ -168,11 +158,12 @@ class Entity(pygame.sprite.Sprite):
             if "idle" in self.state:
                 self.anim_idx += self.anim_speed * dt
             else:
-                self.anim_idx += self.anim_speed * dt * self.stats["action_speed"]
+                self.anim_idx += self.anim_speed * dt * self.action_speed.value
 
     def cast(self, skill, cd):
         if skill not in self.cooldowns:
-            self.cooldowns[skill] = (cd * self.buffs["cd"] if "cd" in self.buffs else cd, pygame.time.get_ticks())
+            self.cooldowns[skill] = ((cd * self["cd"] / self.action_speed) if "cd" in self.buffs else cd,
+                                     pygame.time.get_ticks())
             eval(skill + "()")
 
     def cool_down(self, dt):
@@ -188,7 +179,33 @@ class Entity(pygame.sprite.Sprite):
         self.position = pos
         self.rect.midbottom = self.position
 
+    def equip(self, item):
+        item_type = item.type
+        if item_type in self.items:
+            self.unequip(item_type)
+
+        self.items[item_type] = item
+        for modifier in item.modifiers:
+            self.stats[modifier] += modifier
+
+    def unequip(self, item_slot):
+        for modifier in self.items[item_slot].modifiers:
+            self.stats[modifier] -= modifier
+        del self.items[item_slot]
+
     def update(self, dt):
         self.cool_down(dt)
         self.move(dt)
         self.animate(dt)
+
+    def __setitem__(self, key, value):
+        self.stats[key] = value
+
+    def __delitem__(self, key):
+        del self.stats[key]
+
+    def __getitem__(self, key):
+        return self.stats[key]
+
+    def __str__(self):
+        return f"[{self.name}] " + ", ".join(f"{stat}:{val}" for stat, val in self.stats.items())

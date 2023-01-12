@@ -1,5 +1,9 @@
+from entity_stats import *
+
+
 class Item:
-    def __init__(self, name: str, modifiers: dict):
+    def __init__(self, item_type, name: str, modifiers: dict):
+        self.type = item_type
         self.name = name
         self.modifiers = modifiers
 
@@ -10,8 +14,23 @@ class Item:
 class Entity:
     def __init__(self, name):
         self.name = name
-        self.stats = {}
-        self.action_speed = Stat()
+        self.action_speed = Stat(1)
+        self.stats = {"ms": Stat(action_speed=self.action_speed), "hp": Stat()}
+        self.items = {}
+
+    def equip(self, item):
+        item_type = item.type
+        if item_type in self.items:
+            self.unequip(item_type)
+
+        self.items[item_type] = item
+        for modifier in item.modifiers:
+            self.stats[modifier] += modifier
+
+    def unequip(self, item_slot):
+        for modifier in self.items[item_slot].modifiers:
+            self.stats[modifier] -= modifier
+        del self.items[item_slot]
 
     def __setitem__(self, key, value):
         self.stats[key] = value
@@ -26,35 +45,8 @@ class Entity:
         return f"[{self.name}] " + ", ".join(f"{stat}:{val}" for stat, val in self.stats.items())
 
 
-class Stat:
-    def __init__(self, name=None):
-        self.name = name
-        self._value = 0
-        self._flat = self.StatMultiplier(self.recalc)
-        self._mult = self.StatMultiplier(self.recalc)
-
-    @property
-    def value(self):
-        return self._value
-
-    def recalc(self):
-        self._value = self._flat * self._mult
-
-    class StatMultiplier:
-        def __init__(self, recalc, base=1):
-            self.value = base
-            self.recalc = recalc
-
-        def __add__(self, other):
-            self.recalc()
-            return other + self.value
-
-        def __sub__(self, other):
-            self.recalc()
-            return other - self.value
-
-        def __mul__(self, other):
-            return other * self.value
-
-
 ent = Entity("homie")
+print(ent["ms"])
+ent["ms"] += Stat(4, mult=0.2)
+print(ent["ms"])
+
