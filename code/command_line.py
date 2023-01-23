@@ -8,6 +8,7 @@ class CommandLine:
         self.chat = chat
         self.world = world
         self.commands = ["tp"]
+        pass
 
     def execute(self, command_str):
         args = command_str.split()
