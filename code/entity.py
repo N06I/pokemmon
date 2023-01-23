@@ -3,7 +3,6 @@ import pygame
 
 from file_management import get_sprite_assets, get_hitbox
 from entity_stats import *
-from proto_animation import Animator
 
 
 class Entity(pygame.sprite.Sprite):
@@ -51,9 +50,6 @@ class Entity(pygame.sprite.Sprite):
         self.stats = {"movespeed": Stat(160, action_speed=self.action_speed)}   # good ms amt = 140 ~ 150
         self.items = {}
         self.weight = 50
-
-        # test
-        self.animator = Animator(get_sprite_assets(name), self.state)
 
     def set_action(self, new):
         if new not in self.state:
@@ -160,30 +156,29 @@ class Entity(pygame.sprite.Sprite):
         self.rect.midbottom = self.position
 
     def animate(self, dt):
-        self.image = self.animator.get_next_frame(self.state, self.action_speed, dt)
-        # if self.anim_idx >= self.anim_len:
-        #     self.anim_idx = 0
-        #     # self.anim_end_triggers()
-        #
-        #     # removed anim_idx == 0 check; probable redundancy solved by initting all entities with a too high anim_idx
-        #     self.anim_strip = self.assets[self.state][0]
-        #     self.anim_len = self.assets[self.state][1]
-        #     self.anim_size = self.assets[self.state][2]
-        #     # correct for varying animation sizes
-        #     if self.rect.size != self.anim_size:
-        #         midbot = self.rect.midbottom
-        #         self.rect.size = self.anim_size
-        #         self.rect.midbottom = midbot
-        #
-        # self.image = pygame.Surface((self.anim_size[0], self.anim_size[1]), pygame.SRCALPHA)
-        # self.image.blit(self.anim_strip, (0, 0),
-        #                 (math.trunc(self.anim_idx) * self.anim_size[0], 0, self.anim_size[0], self.anim_size[1]))
-        #
-        # if "static" not in self.state:
-        #     if "idle" in self.state:
-        #         self.anim_idx += self.anim_speed * dt
-        #     else:
-        #         self.anim_idx += self.anim_speed * dt * self.action_speed.value
+        if self.anim_idx >= self.anim_len:
+            self.anim_idx = 0
+            # self.anim_end_triggers()
+
+            # removed anim_idx == 0 check; probable redundancy solved by initting all entities with a too high anim_idx
+            self.anim_strip = self.assets[self.state][0]
+            self.anim_len = self.assets[self.state][1]
+            self.anim_size = self.assets[self.state][2]
+            # correct for varying animation sizes
+            if self.rect.size != self.anim_size:
+                midbot = self.rect.midbottom
+                self.rect.size = self.anim_size
+                self.rect.midbottom = midbot
+
+        self.image = pygame.Surface((self.anim_size[0], self.anim_size[1]), pygame.SRCALPHA)
+        self.image.blit(self.anim_strip, (0, 0),
+                        (math.trunc(self.anim_idx) * self.anim_size[0], 0, self.anim_size[0], self.anim_size[1]))
+
+        if "static" not in self.state:
+            if "idle" in self.state:
+                self.anim_idx += self.anim_speed * dt
+            else:
+                self.anim_idx += self.anim_speed * dt * self.action_speed.value
 
     def cast(self, skill, cd):
         if skill not in self.cooldowns:
