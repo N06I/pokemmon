@@ -1,8 +1,9 @@
 import math
+import pygame
 
-import pygame, time
 from file_management import get_sprite_assets, get_hitbox
 from entity_stats import *
+from proto_animation import Animator
 
 
 class Entity(pygame.sprite.Sprite):
@@ -10,7 +11,6 @@ class Entity(pygame.sprite.Sprite):
         super().__init__(groups)
         # positional info
         self.position = pygame.Vector2(position)
-        self.current_tile = None
 
         # general setup
         self.name = name
@@ -32,6 +32,7 @@ class Entity(pygame.sprite.Sprite):
 
         # asset loading
         self.assets = get_sprite_assets(name)
+        print(self.assets)
 
         # animation
         self.anim_idx = 1000
@@ -50,6 +51,9 @@ class Entity(pygame.sprite.Sprite):
         self.stats = {"movespeed": Stat(160, action_speed=self.action_speed)}   # good ms amt = 140 ~ 150
         self.items = {}
         self.weight = 50
+
+        # test
+        self.animator = Animator(get_sprite_assets(name), self.state)
 
     def set_action(self, new):
         if new not in self.state:
@@ -85,29 +89,27 @@ class Entity(pygame.sprite.Sprite):
 
         # finally apply movement, axis by axis to allow single axis movement during collisions
         # horizontal
-        self.position[0] += self.finalV[0]
-        self.rect.midbottom = self.position
+        self.apply_movement(0)
         if not self.bg_rect.contains(self.rect):
-            self.position[0] -= self.finalV[0]
-            self.rect.midbottom = self.position
+            self.undo_movement(0)
         elif self.check_collidables():
+            print("colliding x")
             self.relocate(0)
         # vertical
-        self.position[1] += self.finalV[1]
-        self.rect.midbottom = self.position
+        self.apply_movement(1)
         if not self.bg_rect.contains(self.rect):
-            self.position[1] -= self.finalV[1]
-            self.rect.midbottom = self.position
+            self.undo_movement(1)
         elif self.check_collidables():
+            print("colliding y")
             self.relocate(1)
 
-    def collided(self, group):
-        for collidable in group:
-            if self.rect.colliderect(collidable.rect):
-                x = collidable.rect.left - self.rect.left
-                y = collidable.rect.top - self.rect.top
-                if self.hitbox.overlap(collidable.hitbox, (x, y)):
-                    return collidable
+    def apply_movement(self, axis):
+        self.position[axis] += self.finalV[axis]
+        self.rect.midbottom = self.position
+
+    def undo_movement(self, axis):
+        self.position[axis] -= self.finalV[axis]
+        self.rect.midbottom = self.position
 
     def check_collidables(self):
         return self.collided(self.collidableSprites)
@@ -115,54 +117,77 @@ class Entity(pygame.sprite.Sprite):
     def check_tiles(self):
         return self.collided(self.tileSprites)
 
+    def mask_colliding(self, rect, collidable):
+        x = collidable.rect.left - rect.left
+        y = collidable.rect.top - rect.top
+        if self.hitbox.overlap(collidable.hitbox, (x, y)):
+            return collidable
+
+    def collided(self, group):
+        for collidable in group:
+            if self.rect.colliderect(collidable.rect):
+                if self.mask_colliding(self.rect, collidable):
+                    return collidable
+
+    def check_sides(self, rect1, rect2):
+        for collidable in self.collidableSprites:
+            one, two = False, False
+            if rect1.colliderect(collidable.rect):
+                one = self.mask_colliding(rect1, collidable)
+            if rect2.colliderect(collidable.rect):
+                two = self.mask_colliding(rect2, collidable)
+            if one and not two:
+                return 1
+            elif two and not one:
+                return -1
+            elif one and two:
+                return 0
+        return 0
+
     def relocate(self, axis):
+        self.undo_movement(axis)
         if axis == 0:
-            # test sideways collisions
-            self.rect.move_ip(0, -abs(self.finalV[0]))
-            zig_collides = 1 if self.check_collidables() else 0
-            self.rect.move_ip(0, abs(self.finalV[0])*2)
-            zag_collides = -1 if self.check_collidables() else 0
+            slide = self.check_sides(self.rect.move(0, -math.ceil(abs(self.inputV[0]))),
+                                     self.rect.move(0, math.ceil(abs(self.inputV[0]))))
             # set position based on test
-            self.position += (-self.finalV[0], zig_collides + zag_collides)
+            self.position += (0, slide)
         elif axis == 1:
-            # test sideways collisions
-            self.rect.move_ip(-abs(self.finalV[1]), 0)
-            zig_collides = 1 if self.check_collidables() else 0
-            self.rect.move_ip(abs(self.finalV[1])*2, 0)
-            zag_collides = -1 if self.check_collidables() else 0
+            slide = self.check_sides(self.rect.move(-math.ceil(abs(self.inputV[1])), 0),
+                                     self.rect.move(math.ceil(abs(self.inputV[1])), 0))
             # set position based on test
-            self.position += (zig_collides + zag_collides, -self.finalV[1])
+            self.position += (slide, 0)
         # set rect
         self.rect.midbottom = self.position
 
     def animate(self, dt):
-        if self.anim_idx >= self.anim_len:
-            self.anim_idx = 0
-            # self.anim_end_triggers()
-
-            # removed anim_idx == 0 check; probable redundancy solved by initting all entities with a too high anim_idx
-            self.anim_strip = self.assets[self.state][0]
-            self.anim_len = self.assets[self.state][1]
-            self.anim_size = self.assets[self.state][2]
-            # correct for varying animation sizes
-            if self.rect.size != self.anim_size:
-                midbot = self.rect.midbottom
-                self.rect.size = self.anim_size
-                self.rect.midbottom = midbot
-
-        self.image = pygame.Surface((self.anim_size[0], self.anim_size[1]), pygame.SRCALPHA)
-        self.image.blit(self.anim_strip, (0, 0),
-                        (math.trunc(self.anim_idx) * self.anim_size[0], 0, self.anim_size[0], self.anim_size[1]))
-
-        if "static" not in self.state:
-            if "idle" in self.state:
-                self.anim_idx += self.anim_speed * dt
-            else:
-                self.anim_idx += self.anim_speed * dt * self.action_speed.value
+        self.image = self.animator.get_next_frame(self.state, self.action_speed, dt)
+        # if self.anim_idx >= self.anim_len:
+        #     self.anim_idx = 0
+        #     # self.anim_end_triggers()
+        #
+        #     # removed anim_idx == 0 check; probable redundancy solved by initting all entities with a too high anim_idx
+        #     self.anim_strip = self.assets[self.state][0]
+        #     self.anim_len = self.assets[self.state][1]
+        #     self.anim_size = self.assets[self.state][2]
+        #     # correct for varying animation sizes
+        #     if self.rect.size != self.anim_size:
+        #         midbot = self.rect.midbottom
+        #         self.rect.size = self.anim_size
+        #         self.rect.midbottom = midbot
+        #
+        # self.image = pygame.Surface((self.anim_size[0], self.anim_size[1]), pygame.SRCALPHA)
+        # self.image.blit(self.anim_strip, (0, 0),
+        #                 (math.trunc(self.anim_idx) * self.anim_size[0], 0, self.anim_size[0], self.anim_size[1]))
+        #
+        # if "static" not in self.state:
+        #     if "idle" in self.state:
+        #         self.anim_idx += self.anim_speed * dt
+        #     else:
+        #         self.anim_idx += self.anim_speed * dt * self.action_speed.value
 
     def cast(self, skill, cd):
         if skill not in self.cooldowns:
-            self.cooldowns[skill] = ((cd * self["cd"] / self.action_speed) if "cd" in self.buffs else cd,
+            self.cooldowns[skill] = ((cd * self["cd"] / self.action_speed.value) if "cd" in self.buffs else cd,
                                      pygame.time.get_ticks())
             eval(skill + "()")
 

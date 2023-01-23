@@ -1,7 +1,7 @@
 import pygame
 
 
-class Camera(pygame.sprite.Group):
+class Camera(pygame.sprite.LayeredUpdates):
     def __init__(self, character, background, base_display, get_events):
         super().__init__()
         self.settings = {"hitbox": False, "bounding_box": False}
@@ -28,16 +28,17 @@ class Camera(pygame.sprite.Group):
 
         displacement = (self.displacement_x, self.displacement_y)
         self.screen.blit(self.background, displacement)
-        for sprite in sorted(self.sprites(), key=lambda x: (x.rect.top + x.hitbox_center)):
-            screen_pos = (sprite.rect.left + displacement[0], sprite.rect.top + displacement[1])
-            self.screen.blit(sprite.image, screen_pos)
+        for layer in self.layers():
+            for sprite in sorted(self.get_sprites_from_layer(layer), key=lambda x: (x.rect.top + x.hitbox_center)):
+                screen_pos = (sprite.rect.left + displacement[0], sprite.rect.top + displacement[1])
+                self.screen.blit(sprite.image, screen_pos)
 
-            # draw rect and hitbox for testing
-            if self.settings["bounding_box"]:
-                onscreen_rect = sprite.rect.move(displacement)
-                pygame.draw.rect(self.screen, (128, 54, 76), onscreen_rect, 1)
-            if self.settings["hitbox"]:
-                self.screen.blit(sprite.hitbox_surf, screen_pos)
+                # draw rect and hitbox for testing
+                if self.settings["bounding_box"]:
+                    onscreen_rect = sprite.rect.move(displacement)
+                    pygame.draw.rect(self.screen, (128, 54, 76), onscreen_rect, 1)
+                if self.settings["hitbox"]:
+                    self.screen.blit(sprite.hitbox_surf, screen_pos)
 
     def toggle_setting(self, setting):
         self.settings[setting] = not self.settings[setting]

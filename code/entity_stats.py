@@ -15,6 +15,7 @@ class Modifier:
 
 class Stat(Modifier):
     def __init__(self, flat=0, mult=0.0, action_speed=None):
+        """Working. Action speed changes might not be reflected here. Needs testing"""
         super().__init__(flat, mult)
         self.action_speed = action_speed
         if action_speed:
@@ -47,14 +48,17 @@ class Stat(Modifier):
                f"{self.mult} {('(action:' + str(self.action_speed.value) + ')') if self.action_speed else ''}"
 
 
-# tast = Stat(7, 0.2)
+# actspd = Stat(1.1)
+# tast = Stat(7, 0.2, actspd)
+# tnst = Stat(7, 0.2)
 # modd = Modifier(3, 0.05)
 # print(tast)
-# print(type(tast))
 # print(modd)
-# print(type(modd))
 #
-# tast += modd
-# print(tast)
-# tast -= modd
-# print(tast)
+# # print(type(tast))
+# # print(type(modd))
+# # tast += modd
+# # print(tast)
+# # tast -= modd
+# # print(tast)
+# print(tnst)

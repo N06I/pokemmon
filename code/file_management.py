@@ -42,7 +42,10 @@ def get_hitbox(name):
     try:
         hb_image = pygame.image.load(f"../gamedata/hitbox/{name}").convert_alpha()
     except FileNotFoundError:
-        hb_image = pygame.image.load(f"../poke_assets/sprites/{name}").convert_alpha()
+        try:
+            hb_image = pygame.image.load(f"../poke_assets/sprites/{name}").convert_alpha()
+        except FileNotFoundError:
+            hb_image = pygame.image.load(f"../poke_assets/search/{name}").convert_alpha()
     hb_image.set_colorkey(-1)
 
     # create the mask and the mask surface, set mask surf colorkey and transparency

@@ -8,6 +8,13 @@ from file_management import get_layout, get_hitbox, get_hitbox_center
 from layout_sprites import *
 
 
+def load_sprite_image(sprite_type):
+    try:
+        return pygame.image.load(f"../poke_assets/sprites/{sprite_type}").convert_alpha()
+    except FileNotFoundError:
+        return pygame.image.load(f"../poke_assets/search/{sprite_type}").convert_alpha()
+
+
 class Area:
 
     def __init__(self, areadata, client, pid, base_display, get_events):
@@ -35,13 +42,18 @@ class Area:
         self.character = Character(get_events, areadata[1], [self.char_grp],
                                    self.collide_grp, self.tile_grp, self.door_grp, self.bg_rect)
         self.visible_grp = Camera(self.character, self.background, self.base_display, get_events)
-        self.character.add(self.visible_grp)
+        self.visible_grp.add(self.character)
         self.other_players = {self.pid: self.character}
         self.other_players = {}
         self.player_dict_simple = {}
-
         # layout sprites
         self.layout_setup(get_layout(self.area_name))
+
+    def update(self, dt):
+        self.updated = pygame.time.get_ticks()
+        self.visible_grp.update(dt)
+        self.visible_grp.custom_draw()
+        self.check_update()
 
     def check_update(self):  # runs every tick (NOT THREADED); updates area if must_update was toggled by async_update()
         if self.must_update:
@@ -54,12 +66,6 @@ class Area:
                     if self.other_players[pid].state != playerdata[1]:
                         self.other_players[pid].state = playerdata[1]
                         self.other_players[pid].anim_idx = 100
-            # for pid, playerdata in self.player_dict_simple.items():
-            #     if pid in self.player_dict_simple.keys() and pid in self.other_players:
-            #         self.other_players[pid].position = playerdata[0]
-            #         if self.other_players[pid].state != playerdata[1]:
-            #             self.other_players[pid].state = playerdata[1]
-            #             self.other_players[pid].anim_idx = 100
             gone = []
             for pid in self.other_players.keys():
                 if pid not in self.player_dict_simple:
@@ -102,8 +108,9 @@ class Area:
             for sprite_pos in occurs:
                 GameObj(groups, sprite_pos, img, mask, mask_image, mask_center, size)
 
-    def update(self, dt):
-        self.updated = pygame.time.get_ticks()
-        self.visible_grp.update(dt)
-        self.visible_grp.custom_draw()
-        self.check_update()
+    def mk_generalist_prop(self, sprite_type, occurs):
+        groups = [self.visible_grp, self.collide_grp]
+        img = load_sprite_image(sprite_type)
+        mask = get_hitbox(sprite_type)
+        for sprite_pos in occurs:
+            GameObj(groups, sprite_pos, img, mask, mask_image, mask_center, size)
