@@ -1,5 +1,6 @@
 import pygame
 from proto_hitbox import Hitbox
+from proto_animation import Animator
 
 
 class GeneralistSprite(pygame.sprite.Sprite):
@@ -19,13 +20,19 @@ class Ledge(GeneralistSprite):
 
 
 class AnimatedSprite(GeneralistSprite):
-    def __init__(self, groups, bottomleft, size, animations, state="idle", hitbox: Hitbox = None):
+    def __init__(self, groups, bottomleft, size, animations, state="idle",
+                 hitbox: Hitbox = None,
+                 animator: Animator = None):
         super().__init__(groups, bottomleft, size, hitbox=hitbox)
-        self.animations = animations
         self.state = state
 
+        if animator:
+            self.animator = animator
+        else:
+            self.animator = Animator(animations, self.state)
+
     def update(self):
-        self.animations[self.state].update()
+        self.animator.update()
 
 
 class Door(AnimatedSprite):
@@ -43,3 +50,20 @@ class Door(AnimatedSprite):
 class Water(AnimatedSprite):
     def __init__(self, groups, bottomleft, size, animations, hitbox):
         super().__init__(groups, bottomleft, size, animations, hitbox=hitbox)
+
+    def draw(self, frame):
+        self.
+
+
+class WaterGroup(pygame.sprite.Group):
+    def __init__(self):
+        super().__init__()
+
+    def draw_group(self):
+        for water_sprite in self.sprites():
+            pass
+
+    def update(self, *args, **kwargs) -> None:
+        for water_sprite in self.sprites():
+            water_sprite.update(*args, *kwargs)
+            self.draw_sprite()

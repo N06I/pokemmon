@@ -52,7 +52,6 @@ class Area:
     def update(self, dt):
         self.updated = pygame.time.get_ticks()
         self.visible_grp.update(dt)
-        self.visible_grp.custom_draw()
         self.check_update()
 
     def check_update(self):  # runs every tick (NOT THREADED); updates area if must_update was toggled by async_update()

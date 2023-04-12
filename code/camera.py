@@ -20,7 +20,10 @@ class Camera(pygame.sprite.LayeredUpdates):
         self.displacement_x = self.width_half - self.character.rect.centerx
         self.displacement_y = self.height_half - self.character.rect.centery
 
-    def custom_draw(self):
+    def toggle_setting(self, setting):
+        self.settings[setting] = not self.settings[setting]
+
+    def update(self, dt, *args, **kwargs) -> None:
         if (self.bg_w - self.width_half) >= self.character.rect.centerx >= self.width_half:
             self.displacement_x = self.width_half - self.character.rect.centerx
         if (self.bg_h - self.height_half) >= self.character.rect.centery >= self.height_half:
@@ -30,6 +33,7 @@ class Camera(pygame.sprite.LayeredUpdates):
         self.screen.blit(self.background, displacement)
         for layer in self.layers():
             for sprite in sorted(self.get_sprites_from_layer(layer), key=lambda x: (x.rect.top + x.hitbox_center)):
+                sprite.update(dt)
                 screen_pos = (sprite.rect.left + displacement[0], sprite.rect.top + displacement[1])
                 self.screen.blit(sprite.image, screen_pos)
 
@@ -40,13 +44,6 @@ class Camera(pygame.sprite.LayeredUpdates):
                 if self.settings["hitbox"]:
                     self.screen.blit(sprite.hitbox_surf, screen_pos)
 
-    def toggle_setting(self, setting):
-        self.settings[setting] = not self.settings[setting]
-
-    def update(self, *args, **kwargs) -> None:
-        for sprite in self.sprites():
-            sprite.update(*args, **kwargs)
-
         keys = pygame.key.get_pressed()
         if keys[pygame.K_F3]:
             for event in self.get_events():
@@ -55,3 +52,4 @@ class Camera(pygame.sprite.LayeredUpdates):
                         self.toggle_setting("hitbox")
                     if event.key == pygame.K_b:
                         self.toggle_setting("bounding_box")
+
